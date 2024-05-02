@@ -1,6 +1,6 @@
 use std::error;
 use std::fmt;
-use std::fmt::write;
+
 
 #[derive(Debug)]
 pub enum GLHookerError {

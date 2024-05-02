@@ -2,11 +2,11 @@ pub mod errors;
 mod wrapper;
 
 use std::{
-    error, ffi::{CStr, CString}, mem, os::raw::c_void, ptr::{self, copy, null}
+    error, ffi::{CStr, CString}, os::raw::c_void
 };
 
 use errors::GLHookerError;
-use libc::CS;
+
 use wrapper::{GLHookerHookType, GLHookerRegisterHookDesc};
 
 use crate::wrapper::glhooker_init;
@@ -38,7 +38,7 @@ impl GLHooker {
     }
 
     pub fn register_hook<'a>(hook: Hook<'a>) -> Result<()> {
-        let src_name: CString = CString::new(hook.source_func_name)?;
+        let _src_name: CString = CString::new(hook.source_func_name)?;
 
         unsafe {
             let mut desc = wrapper::GLHookerRegisterHookDesc {
@@ -76,7 +76,7 @@ mod tests {
 
     use crate::{GLHooker, Hook, HookType};
     use gl;
-    use gl_loader::*;
+    
     use std::error;
 
     type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -117,8 +117,14 @@ mod tests {
 
     #[test]
     pub fn test_load_one() -> Result<()>{
-        test_register_hook_one()?;
-
+        GLHooker::init()?;
+        gl_loader::init_gl();
+        let hook: Hook = Hook {
+            hook_type: HookType::Intercept,
+            source_func_name: "glBindBuffer",
+            dst_func: hook,
+        };
+        GLHooker::register_hook(hook)?;
         gl::load_with(|f| gl_loader::get_proc_address(f) as *const _);
         Ok(())
 
