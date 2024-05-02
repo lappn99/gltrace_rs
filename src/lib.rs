@@ -9,7 +9,7 @@ pub struct GLTrace;
 impl GLTrace {
     pub fn init() -> Result<()> {
         let _ = GLHooker::init()?;
-        let hook: Hook = Hook {
+        let _hook: Hook = Hook {
             hook_type: HookType::Intercept,
             source_func_name: "glBindBuffer",
             dst_func: trace,
@@ -28,7 +28,7 @@ pub unsafe extern "C" fn trace() {
 mod tests {
 
     use crate::GLTrace;
-    use gl_loader::*;
+    
     use std::error;
     #[test]
     pub fn test_init() -> Result<(), Box<dyn error::Error>> {
