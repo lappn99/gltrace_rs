@@ -6,6 +6,7 @@ use std::fmt;
 pub enum GLHookerError {
     InitError,
     RegisterHookError(String),
+    GetOriginalNameError
 }
 
 impl fmt::Display for GLHookerError {
@@ -14,6 +15,9 @@ impl fmt::Display for GLHookerError {
             GLHookerError::InitError => write!(f, "Could not initialize GLHooker"),
             GLHookerError::RegisterHookError(ref func) => {
                 write!(f, "Could not hook function: {}", func)
+            },
+            GLHookerError::GetOriginalNameError => {
+                write!(f,"Could not get original name")
             }
         }
     }

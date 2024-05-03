@@ -1,3 +1,4 @@
+
 pub mod errors;
 mod wrapper;
 
@@ -6,10 +7,7 @@ use std::{
 };
 
 use errors::GLHookerError;
-
-use wrapper::{GLHookerHookType, GLHookerRegisterHookDesc};
-
-use crate::wrapper::glhooker_init;
+use wrapper::{glhooker_init, GLHookerHookType, GLHookerRegisterHookDesc};
 
 pub struct GLHooker {}
 
@@ -21,7 +19,7 @@ pub enum HookType {
 pub struct Hook<'a> {
     pub hook_type: HookType,
     pub source_func_name: &'a str,
-    pub dst_func: unsafe extern "C" fn(),
+    pub dst_func: *mut c_void,
 }
 
 type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -41,43 +39,59 @@ impl GLHooker {
         let _src_name: CString = CString::new(hook.source_func_name)?;
 
         unsafe {
+
             let mut desc = wrapper::GLHookerRegisterHookDesc {
                 hook_type: match hook.hook_type {
                     HookType::Inline => GLHookerHookType::Inline,
                     HookType::Intercept => GLHookerHookType::Intercept,
                 },
                 src_func_name: [0;64],
-                dst_func: (hook.dst_func as *mut c_void),
+                dst_func: hook.dst_func,
             };
+
             let n = std::cmp::min(hook.source_func_name.len(), 64);
             desc.src_func_name[0..n].copy_from_slice(&hook.source_func_name.as_bytes()[0..n]);
+
             if !wrapper::glhooker_registerhook(&desc as *const GLHookerRegisterHookDesc) {
-                Err(GLHookerError::RegisterHookError(String::from(
-                    CStr::from_bytes_with_nul(&desc.src_func_name[..])?.to_str().unwrap(),
-                ))
+                Err(GLHookerError::RegisterHookError(String::from(hook.source_func_name))
                 .into())
             } else {
                 Ok(())
             }
+
         }
     }
 
-    pub fn register_hook_all<'a>(hook_type: HookType, func: unsafe extern "C" fn()) -> Result<()> {
+    pub fn register_hook_all<'a>(hook_type: HookType, func: * mut c_void) -> Result<()> {
         GLHooker::register_hook(Hook {
             hook_type: hook_type,
             source_func_name: &String::new(),
             dst_func: func,
         })
     }
+
+    pub fn get_original_name(addr: *const c_void) -> Result<&'static str> {
+        unsafe {
+            let result = wrapper::glhooker_getoriginalname(addr);
+            if result.is_null() {
+                Err(GLHookerError::GetOriginalNameError.into())
+            } else {
+                Ok(CStr::from_ptr(result).to_str()?)
+            }
+        }
+       
+
+    }
 }
 
 #[cfg(test)]
 mod tests {
 
+    use core::ffi::c_void;
+    use std::error;
     use crate::{GLHooker, Hook, HookType};
     use gl;
-    
-    use std::error;
+
 
     type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
@@ -99,7 +113,7 @@ mod tests {
         let hook: Hook = Hook {
             hook_type: HookType::Intercept,
             source_func_name: "glBindBuffer",
-            dst_func: hook,
+            dst_func: hook as *mut c_void,
         };
 
         assert_eq!(GLHooker::register_hook(hook)?, ());
@@ -111,7 +125,7 @@ mod tests {
         GLHooker::init()?;
         gl_loader::init_gl();
 
-        assert_eq!(GLHooker::register_hook_all(HookType::Intercept, hook)?, ());
+        assert_eq!(GLHooker::register_hook_all(HookType::Intercept, hook as *mut c_void)?, ());
         Ok(())
     }
 
@@ -122,8 +136,9 @@ mod tests {
         let hook: Hook = Hook {
             hook_type: HookType::Intercept,
             source_func_name: "glBindBuffer",
-            dst_func: hook,
+            dst_func: hook as *mut c_void,
         };
+        
         GLHooker::register_hook(hook)?;
         gl::load_with(|f| gl_loader::get_proc_address(f) as *const _);
         Ok(())

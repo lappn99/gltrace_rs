@@ -51,6 +51,8 @@ dependencies = [
 name = "gltrace_rs"
 version = "0.1.0"
 dependencies = [
+ "gl",
+ "gl_generator",
  "gl_loader",
  "glhooker",
 ]

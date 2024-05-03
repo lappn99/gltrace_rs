@@ -1,6 +1,4 @@
-use std::{
-    os::raw::c_void,
-};
+use std::os::raw::c_void;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
@@ -19,8 +17,12 @@ pub struct GLHookerRegisterHookDesc {
 
 #[link(name = "glhooker")]
 extern "C" {
-
     pub fn glhooker_init() -> bool;
     pub fn glhooker_registerhook(desc: *const GLHookerRegisterHookDesc) -> bool;
-
+    pub fn glhooker_getoriginalname(addr: *const c_void) -> *const i8;
 }
+
+
+
+
+
