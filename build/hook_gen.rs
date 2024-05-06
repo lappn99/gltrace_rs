@@ -40,6 +40,7 @@ where
                         println!("Call {name} with {arg_names}", {arg_values});
                         if let Ok(addr) = crate::GLHooker::get_original_function() {{
                             let gl_func = core::mem::transmute::<*mut core::ffi::c_void, extern "C" fn({type_signature}) -> {return_type}>(addr);
+                            crate::GLTrace::trace_call().unwrap();
                             gl_func({arg_values})
                         }} else {{
                             panic!();

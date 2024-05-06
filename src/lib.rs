@@ -36,7 +36,7 @@ impl GLTrace {
     }
 
     pub fn trace_call() -> Result<()> {
-        Ok(())
+        todo!("GLTrace::trace_call()");
     }
 
     pub fn get_gl_func(str: &str) -> *const () {
@@ -98,6 +98,7 @@ mod tests {
         assert!(e.unwrap_err().is::<GLHookerError>());
         Ok(())
     }
+    
 
     #[no_mangle]
     pub fn gl_clear(mask: GLbitfield) {
