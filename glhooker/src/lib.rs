@@ -7,7 +7,6 @@ mod wrapper;
 use std::{
     error,
     ffi::{c_void, CStr, CString},
-    marker,
 };
 
 use errors::GLHookerError;
@@ -43,8 +42,6 @@ impl GLHooker {
 
     pub fn register_hook<'a>(hook: Hook<'a>) -> Result<()> {
         let _src_name: CString = CString::new(hook.source_func_name)?;
-        let fun: *mut fn() = hook.dst_func as *mut fn();
-
         unsafe {
             let mut desc = wrapper::GLHookerRegisterHookDesc {
                 hook_type: match hook.hook_type {
