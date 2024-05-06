@@ -1,6 +1,8 @@
 
 pub mod errors;
+
 mod wrapper;
+
 
 use std::{
     error, ffi::{CStr, CString}, os::raw::c_void

@@ -11,7 +11,8 @@ build="./build/main.rs"
 [dependencies]
 glhooker = {path = "./glhooker", version = "*"}
 gl_loader = "*"
-"gl" = "*"
+gl = "*"
+lazy_static = "*"
 
 [dev-dependencies]
 

@@ -2,22 +2,28 @@ mod errors;
 mod hooks;
 pub mod types;
 pub mod macros;
+pub mod generator;
 
-use std::{error::Error};
+use std::{cell::RefCell, error::Error, sync::Mutex};
 use core::ffi::c_void;
 use gl_loader;
 use gl;
 use glhooker::{GLHooker, Hook, HookType};
 use hooks::get_hook;
 
+#[macro_use]
+extern crate lazy_static;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 
 
-pub struct GLTrace{
-    
+/*
+lazy_static! {
+    static ref TRACE_OUT: Mutex< dyn std::io::Write + Send> = Mutex::new(std::io::stdout());
 }
+ */
+pub struct GLTrace;
 
 impl GLTrace {
 
@@ -27,10 +33,15 @@ impl GLTrace {
     }
     pub fn trace_func(symbol: &str) -> Result<()> {
         GLHooker::register_hook(Hook{
-            hook_type: HookType::Intercept,
+            hook_type: HookType::Inline,
             source_func_name: symbol,
             dst_func: get_hook(symbol)?
         })
+    }
+
+    pub fn trace_call() -> Result<()> {
+        
+        Ok(())
     }
 
 }
@@ -90,7 +101,7 @@ mod tests {
 
     #[no_mangle]
     pub fn gl_clear(mask: GLbitfield) {
-        
+        let _ = GLTrace::trace_call(/* Stuff */);
     }
 
 }

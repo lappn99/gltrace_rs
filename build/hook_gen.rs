@@ -1,5 +1,5 @@
-use std::io;
-use gl_generator::{Generator,  Registry};
+use std::{fmt::format, io};
+use gl_generator::{Binding, Generator, Registry};
 
 pub struct HookGenerator;
 
@@ -32,15 +32,22 @@ where
             writeln!(
                 dest,
                 r#"
-                    #[inline(never)]
+                    
                     #[allow(non_camel_case_types, non_snake_case, unused_variables,dead_code)]
                     pub unsafe extern "C" fn gl{name}({params}){{
-                        println!("{name}!");
+                        println!("Call {name} with {arg_names}", {arg_values});
+                        
                     }}
                 "#,
                 name = cmd.proto.ident, 
                 params = cmd.params.iter().map(|binding| {
                     format!("{}: {}", binding.ident, binding.ty)
+                }).collect::<Vec<String>>().join(", "),
+                arg_names = cmd.params.iter().map(|binding| {
+                    format!("{}: {{:?}}",binding.ident)
+                }).collect::<Vec<String>>().join(", "),
+                arg_values = cmd.params.iter().map(|binding| {
+                    format!("{}",binding.ident)
                 }).collect::<Vec<String>>().join(", ")
             )?
         }

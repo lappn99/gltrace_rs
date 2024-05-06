@@ -1,4 +1,4 @@
-use core::ffi::*;
+use std::os::raw::*;
 //https://www.khronos.org/opengl/wiki/OpenGL_Type
 
 
@@ -15,9 +15,9 @@ pub mod types {
     pub type GLuint64 = super::c_ulong;
     pub type GLsizei = super::c_int;
     pub type GLenum = super::c_int;
-    pub type GLintptr = *mut super::c_void;
-    pub type GLsizeiptr = *mut super::c_void;
-    pub type GLsync = *mut super::c_void;
+    pub type GLintptr = isize;
+    pub type GLsizeiptr = isize;
+    pub type GLsync = *const GLSyncHandle;
     pub type GLbitfield = super::c_int;
     pub type GLhlaf = super::c_ushort;
     pub type GLfloat = super::c_float;
@@ -26,6 +26,8 @@ pub mod types {
     pub type GLclampd = super::c_double;
     pub type GLchar = super::c_char;
     pub type GLubyte = super::c_uchar;
+
+    pub enum GLSyncHandle{}
 
     pub type GLDEBUGPROC = Option<extern "system" fn(source: GLenum,
         gltype: GLenum,
