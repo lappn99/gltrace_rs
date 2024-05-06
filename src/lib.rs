@@ -1,23 +1,19 @@
 #![feature(fn_traits)]
 mod errors;
-mod hooks;
-pub mod types;
-pub mod macros;
 pub mod generator;
+mod hooks;
+pub mod macros;
+pub mod types;
 
-use std::{cell::RefCell, error::Error, sync::Mutex};
-use core::ffi::c_void;
 use gl_loader;
-use gl;
 use glhooker::{GLHooker, Hook, HookType};
 use hooks::get_hook;
+use std::error::Error;
 
 #[macro_use]
 extern crate lazy_static;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
-
-
 
 /*
 lazy_static! {
@@ -27,28 +23,25 @@ lazy_static! {
 pub struct GLTrace;
 
 impl GLTrace {
-
     pub fn init() -> Result<()> {
         GLHooker::init()?;
         Ok(())
     }
     pub fn trace_func(symbol: &str) -> Result<()> {
-        GLHooker::register_hook(Hook{
+        GLHooker::register_hook(Hook {
             hook_type: HookType::Inline,
             source_func_name: symbol,
-            dst_func: get_hook(symbol)?
+            dst_func: get_hook(symbol)?,
         })
     }
 
     pub fn trace_call() -> Result<()> {
-        
         Ok(())
     }
 
-    pub fn get_gl_func(str: &str) -> *const (){
+    pub fn get_gl_func(str: &str) -> *const () {
         gl_loader::get_proc_address(str)
     }
-
 }
 
 #[no_mangle]
@@ -60,14 +53,13 @@ pub unsafe extern "C" fn trace() {
 mod tests {
 
     use crate::{types::types::GLbitfield, GLTrace};
-    
-    use std::{error, io::ErrorKind};
+
     use gl;
     use gl_loader;
     use glhooker::errors::GLHookerError;
+    use std::{error, io::ErrorKind};
     #[test]
     pub fn test_new() -> Result<(), Box<dyn error::Error>> {
-        
         let _ = GLTrace::init()?;
         Ok(())
     }
@@ -79,12 +71,11 @@ mod tests {
         gl::load_with(|symbol| {
             match GLTrace::trace_func(symbol) {
                 Err(error) => println!("{:?}", error),
-                _ => ()
+                _ => (),
             }
             gl_loader::get_proc_address(symbol) as *const _
         });
 
-    
         Ok(())
     }
 
@@ -93,12 +84,15 @@ mod tests {
         let _ = GLTrace::init()?;
         let e = GLTrace::trace_func("glBinBuffer");
         assert!(e.is_err());
-        assert_eq!(format!("{}", e.unwrap_err()), "Hook for symbol \"glBinBuffer\" not found");
+        assert_eq!(
+            format!("{}", e.unwrap_err()),
+            "Hook for symbol \"glBinBuffer\" not found"
+        );
         Ok(())
     }
 
     #[test]
-    pub fn test_noinit() -> Result<(), Box<dyn error::Error>>{
+    pub fn test_noinit() -> Result<(), Box<dyn error::Error>> {
         let e = GLTrace::trace_func("glBindBuffer");
         assert!(e.is_err());
         assert!(e.unwrap_err().is::<GLHookerError>());
@@ -109,7 +103,4 @@ mod tests {
     pub fn gl_clear(mask: GLbitfield) {
         let _ = GLTrace::trace_call(/* Stuff */);
     }
-
 }
-
-

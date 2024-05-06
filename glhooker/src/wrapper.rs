@@ -11,7 +11,7 @@ pub enum GLHookerHookType {
 #[derive(Debug, Clone, Copy)]
 pub struct GLHookerRegisterHookDesc {
     pub hook_type: GLHookerHookType,
-    pub src_func_name: [u8;64],
+    pub src_func_name: [u8; 64],
     pub dst_func: *mut c_void,
 }
 
@@ -22,8 +22,3 @@ extern "C" {
     pub fn glhooker_getoriginalname(addr: *const c_void) -> *const i8;
     pub fn glhooker_getoriginalfunction() -> *mut c_void;
 }
-
-
-
-
-

@@ -4,13 +4,16 @@ pub mod errors;
 
 mod wrapper;
 
-
 use std::{
-    error, ffi::{CStr, CString,c_void}, marker
+    error,
+    ffi::{c_void, CStr, CString},
+    marker,
 };
 
 use errors::GLHookerError;
-use wrapper::{glhooker_getoriginalfunction, glhooker_init, GLHookerHookType, GLHookerRegisterHookDesc};
+use wrapper::{
+    glhooker_getoriginalfunction, glhooker_init, GLHookerHookType, GLHookerRegisterHookDesc,
+};
 
 pub struct GLHooker {}
 
@@ -40,16 +43,15 @@ impl GLHooker {
 
     pub fn register_hook<'a>(hook: Hook<'a>) -> Result<()> {
         let _src_name: CString = CString::new(hook.source_func_name)?;
-        let fun : *mut fn() = hook.dst_func as *mut fn();
-        
-        unsafe {
+        let fun: *mut fn() = hook.dst_func as *mut fn();
 
+        unsafe {
             let mut desc = wrapper::GLHookerRegisterHookDesc {
                 hook_type: match hook.hook_type {
                     HookType::Inline => GLHookerHookType::Inline,
                     HookType::Intercept => GLHookerHookType::Intercept,
                 },
-                src_func_name: [0;64],
+                src_func_name: [0; 64],
                 dst_func: hook.dst_func,
             };
 
@@ -57,16 +59,14 @@ impl GLHooker {
             desc.src_func_name[0..n].copy_from_slice(&hook.source_func_name.as_bytes()[0..n]);
 
             if !wrapper::glhooker_registerhook(&desc as *const GLHookerRegisterHookDesc) {
-                Err(GLHookerError::RegisterHookError(String::from(hook.source_func_name))
-                .into())
+                Err(GLHookerError::RegisterHookError(String::from(hook.source_func_name)).into())
             } else {
                 Ok(())
             }
-
         }
     }
 
-    pub fn register_hook_all<'a>(hook_type: HookType, func: * mut c_void) -> Result<()> {
+    pub fn register_hook_all<'a>(hook_type: HookType, func: *mut c_void) -> Result<()> {
         GLHooker::register_hook(Hook {
             hook_type: hook_type,
             source_func_name: &String::new(),
@@ -85,39 +85,33 @@ impl GLHooker {
         }
     }
 
-    pub fn get_original_function() -> Result<*mut c_void>
-    {
-       let addr: *mut c_void = unsafe { glhooker_getoriginalfunction() };
-       if addr.is_null() {
+    pub fn get_original_function() -> Result<*mut c_void> {
+        let addr: *mut c_void = unsafe { glhooker_getoriginalfunction() };
+        if addr.is_null() {
             Err(GLHookerError::GetOriginalFunctionError.into())
-       } else {
+        } else {
             Ok(addr)
-       }
-        
+        }
     }
-
 }
 
 #[cfg(test)]
 mod tests {
 
-    use core::ffi::c_void;
-    use std::error;
     use crate::{GLHooker, Hook, HookType};
+    use core::ffi::c_void;
     use gl;
-
+    use std::error;
 
     type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
     #[no_mangle]
     pub unsafe extern "C" fn hook() {
         println!("Works!");
-
     }
 
     #[test]
     pub fn test_init() -> Result<()> {
-       
         assert_eq!(GLHooker::init()?, ());
         Ok(())
     }
@@ -137,16 +131,19 @@ mod tests {
     }
 
     #[test]
-    pub fn test_register_hook_all() -> Result<()>{
+    pub fn test_register_hook_all() -> Result<()> {
         GLHooker::init()?;
         gl_loader::init_gl();
 
-        assert_eq!(GLHooker::register_hook_all(HookType::Intercept, hook as *mut c_void)?, ());
+        assert_eq!(
+            GLHooker::register_hook_all(HookType::Intercept, hook as *mut c_void)?,
+            ()
+        );
         Ok(())
     }
 
     #[test]
-    pub fn test_load_one() -> Result<()>{
+    pub fn test_load_one() -> Result<()> {
         GLHooker::init()?;
         gl_loader::init_gl();
         let hook: Hook = Hook {
@@ -154,10 +151,9 @@ mod tests {
             source_func_name: "glBindBuffer",
             dst_func: hook as *mut c_void,
         };
-        
+
         GLHooker::register_hook(hook)?;
         gl::load_with(|f| gl_loader::get_proc_address(f) as *const _);
         Ok(())
-
     }
 }

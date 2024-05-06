@@ -1,8 +1,6 @@
 use std::os::raw::*;
 //https://www.khronos.org/opengl/wiki/OpenGL_Type
 
-
-
 pub mod types {
     pub type GLboolean = super::c_uchar;
     pub type GLbyte = super::c_uchar;
@@ -27,28 +25,39 @@ pub mod types {
     pub type GLchar = super::c_char;
     pub type GLubyte = super::c_uchar;
 
-    pub enum GLSyncHandle{}
+    pub enum GLSyncHandle {}
 
-    pub type GLDEBUGPROC = Option<extern "system" fn(source: GLenum,
-        gltype: GLenum,
-        id: GLuint,
-        severity: GLenum,
-        length: GLsizei,
-        message: *const GLchar,
-        userParam: *mut super::c_void)>;
-        pub type GLDEBUGPROCARB = Option<extern "system" fn(source: GLenum,
-                   gltype: GLenum,
-                   id: GLuint,
-                   severity: GLenum,
-                   length: GLsizei,
-                   message: *const GLchar,
-                   userParam: *mut super::c_void)>;
-        pub type GLDEBUGPROCKHR = Option<extern "system" fn(source: GLenum,
-                   gltype: GLenum,
-                   id: GLuint,
-                   severity: GLenum,
-                   length: GLsizei,
-                   message: *const GLchar,
-                   userParam: *mut super::c_void)>;
-
+    pub type GLDEBUGPROC = Option<
+        extern "system" fn(
+            source: GLenum,
+            gltype: GLenum,
+            id: GLuint,
+            severity: GLenum,
+            length: GLsizei,
+            message: *const GLchar,
+            userParam: *mut super::c_void,
+        ),
+    >;
+    pub type GLDEBUGPROCARB = Option<
+        extern "system" fn(
+            source: GLenum,
+            gltype: GLenum,
+            id: GLuint,
+            severity: GLenum,
+            length: GLsizei,
+            message: *const GLchar,
+            userParam: *mut super::c_void,
+        ),
+    >;
+    pub type GLDEBUGPROCKHR = Option<
+        extern "system" fn(
+            source: GLenum,
+            gltype: GLenum,
+            id: GLuint,
+            severity: GLenum,
+            length: GLsizei,
+            message: *const GLchar,
+            userParam: *mut super::c_void,
+        ),
+    >;
 }
