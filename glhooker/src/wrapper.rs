@@ -1,4 +1,4 @@
-use std::os::raw::c_void;
+use core::ffi::c_void;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
@@ -20,6 +20,7 @@ extern "C" {
     pub fn glhooker_init() -> bool;
     pub fn glhooker_registerhook(desc: *const GLHookerRegisterHookDesc) -> bool;
     pub fn glhooker_getoriginalname(addr: *const c_void) -> *const i8;
+    pub fn glhooker_getoriginalfunction() -> *mut c_void;
 }
 
 

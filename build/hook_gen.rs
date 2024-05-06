@@ -34,12 +34,21 @@ where
                 r#"
                     
                     #[allow(non_camel_case_types, non_snake_case, unused_variables,dead_code)]
-                    pub unsafe extern "C" fn gl{name}({params}){{
+                    pub unsafe extern "C" fn gl{name}({params}) -> {return_type}{{
                         println!("Call {name} with {arg_names}", {arg_values});
+                        if let Ok(addr) = crate::GLHooker::get_original_function() {{
+                            let gl_func = core::mem::transmute::<*mut core::ffi::c_void, extern "C" fn({type_signature}) -> {return_type}>(addr);
+                            gl_func({orig_args})
+                        }} else {{
+                            panic!();
+                        }}
+                        
+
                         
                     }}
                 "#,
                 name = cmd.proto.ident, 
+                return_type = cmd.proto.ty,
                 params = cmd.params.iter().map(|binding| {
                     format!("{}: {}", binding.ident, binding.ty)
                 }).collect::<Vec<String>>().join(", "),
@@ -47,6 +56,12 @@ where
                     format!("{}: {{:?}}",binding.ident)
                 }).collect::<Vec<String>>().join(", "),
                 arg_values = cmd.params.iter().map(|binding| {
+                    format!("{}",binding.ident)
+                }).collect::<Vec<String>>().join(", "),
+                type_signature = cmd.params.iter().map(|binding| {
+                    format!("{}", binding.ty)
+                }).collect::<Vec<String>>().join(", "),
+                orig_args = cmd.params.iter().map(|binding|{
                     format!("{}",binding.ident)
                 }).collect::<Vec<String>>().join(", ")
             )?

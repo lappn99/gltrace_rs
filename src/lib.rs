@@ -1,3 +1,4 @@
+#![feature(fn_traits)]
 mod errors;
 mod hooks;
 pub mod types;
@@ -44,6 +45,10 @@ impl GLTrace {
         Ok(())
     }
 
+    pub fn get_gl_func(str: &str) -> *const (){
+        gl_loader::get_proc_address(str)
+    }
+
 }
 
 #[no_mangle]
@@ -62,6 +67,7 @@ mod tests {
     use glhooker::errors::GLHookerError;
     #[test]
     pub fn test_new() -> Result<(), Box<dyn error::Error>> {
+        
         let _ = GLTrace::init()?;
         Ok(())
     }

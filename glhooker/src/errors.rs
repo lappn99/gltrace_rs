@@ -6,7 +6,8 @@ use std::fmt;
 pub enum GLHookerError {
     InitError,
     RegisterHookError(String),
-    GetOriginalNameError
+    GetOriginalNameError,
+    GetOriginalFunctionError
 }
 
 impl fmt::Display for GLHookerError {
@@ -18,6 +19,9 @@ impl fmt::Display for GLHookerError {
             },
             GLHookerError::GetOriginalNameError => {
                 write!(f,"Could not get original name")
+            },
+            GLHookerError::GetOriginalFunctionError => {
+                write!(f,"Could not get original function")
             }
         }
     }

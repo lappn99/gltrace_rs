@@ -1,15 +1,16 @@
-
+#![feature(fn_traits)]
+#![feature(tuple_trait)]
 pub mod errors;
 
 mod wrapper;
 
 
 use std::{
-    error, ffi::{CStr, CString}, os::raw::c_void
+    error, ffi::{CStr, CString,c_void}, marker
 };
 
 use errors::GLHookerError;
-use wrapper::{glhooker_init, GLHookerHookType, GLHookerRegisterHookDesc};
+use wrapper::{glhooker_getoriginalfunction, glhooker_init, GLHookerHookType, GLHookerRegisterHookDesc};
 
 pub struct GLHooker {}
 
@@ -39,7 +40,8 @@ impl GLHooker {
 
     pub fn register_hook<'a>(hook: Hook<'a>) -> Result<()> {
         let _src_name: CString = CString::new(hook.source_func_name)?;
-
+        let fun : *mut fn() = hook.dst_func as *mut fn();
+        
         unsafe {
 
             let mut desc = wrapper::GLHookerRegisterHookDesc {
@@ -81,9 +83,19 @@ impl GLHooker {
                 Ok(CStr::from_ptr(result).to_str()?)
             }
         }
-       
-
     }
+
+    pub fn get_original_function() -> Result<*mut c_void>
+    {
+       let addr: *mut c_void = unsafe { glhooker_getoriginalfunction() };
+       if addr.is_null() {
+            Err(GLHookerError::GetOriginalFunctionError.into())
+       } else {
+            Ok(addr)
+       }
+        
+    }
+
 }
 
 #[cfg(test)]
@@ -100,10 +112,12 @@ mod tests {
     #[no_mangle]
     pub unsafe extern "C" fn hook() {
         println!("Works!");
+
     }
 
     #[test]
     pub fn test_init() -> Result<()> {
+       
         assert_eq!(GLHooker::init()?, ());
         Ok(())
     }
