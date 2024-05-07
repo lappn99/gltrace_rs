@@ -2,7 +2,7 @@
 
 ## OpenGL Tracing Library
 
-This tool allows you trace OpenGL calls, a la `RenderDoc`, the big difference here is that it is integrated directly into your program, instead of launching your program through something like `RenderDoc` or `Nvidia Nsight`. 
+This tool allows you trace OpenGL calls, a la `RenderDoc`. The big difference here is that it is integrated directly into your program, instead of launching your program through something like `RenderDoc` or `Nvidia Nsight`. 
 
 This is still a WIP but as it stands it is quite neat I think; and at the very least is a cool tech demo. And it also took me a while to do.
 
@@ -12,9 +12,9 @@ It works by hooking into OpenGL calls using my other library I created for this 
 
 First the aforementioned [gl_hooker](https://github.com/lappn99/gl_hooker) is required on your system. See install instructions for that. 
 
-Obviously easy integration into the project is the #1 priority for something like this. I believe the API as it stands now is *decent* regarding this but it will probably change.
+Obviously easy integration into the program is the #1 priority for something like this. I believe the API as it stands now is *decent* regarding this but it will probably change.
 
-It seems to work best when using a loading library like [gl_loader](https://github.com/maeln/gl_loader), as the name of each symbol is required. Using the example on that page, this is what initialzing the tracer and installing the hooks would look like:
+It seems to work best when using a loading library like [gl_loader](https://github.com/maeln/gl_loader), as the name of each symbol loaded is required too hook into it. Using the example on that page, this is what initialzing the tracer and installing the hooks would look like:
 
 ```
 extern crate gl_loader;
@@ -34,7 +34,7 @@ fn load_gl_symbol() -> Result<(), Box<dyn std::error::Error>> {
     /*Application code*/
 
 ```
-The library pretty much does the rest of the work for you regarding the actual tracing. The "trace" can be found in `gltracer.trace` which is  `Box<Vec<String>>` of all the calls made with their parameter values.
+The library pretty much does the rest of the work for you regarding the actual tracing. The "trace" can be found in `gltracer.trace` which is a `Box<Vec<String>>` of all the calls made with their parameter values.
 
 The trace can then be written to whatever implements the `fmt::Write` trait, which is input to the very simple `TraceOutputGenerator` trait which takes all the traces and just writes them into the writer. All in all, to print out the trace to a file it might look like this:
 
@@ -50,6 +50,15 @@ let _ = gltrace.trace.write_trace(gltrace_rs::TraceTextGenerator, &mut trace_fil
 
 > **_NOTE:_**  It is not wise to capture the trace of a *whole* program that you expect to run for a while as memory use will wise very quickly. Instead only the trace of a *single* frame should be captured. As of right now this can be done by simply clearing the `gltracer.trace` Vector after (or before, it depends) your `glClear` call or when you swap buffers. In the future a better facility will be implemented to handle this better. 
 
+The output of one frame then may look like this:
+```
+glUniformMatrix4fv(location: 0, count: 1, transpose: 0, value: 0x7fff6d5373dc)
+glUniformMatrix4fv(location: 1, count: 1, transpose: 0, value: 0x7fff6d537150)
+glUniformMatrix4fv(location: 2, count: 1, transpose: 0, value: 0x7fff6d5371a8)
+glDrawArrays(mode: 4, first: 0, count: 36)
+glClear(mask: 16640)
+```
+
 ## Future
 
 1. Playback of trace, with the ability to inspect the calls more closely. 
@@ -57,4 +66,8 @@ let _ = gltrace.trace.write_trace(gltrace_rs::TraceTextGenerator, &mut trace_fil
     * It may seem like the design of the `TraceOutputGenerator` is over engineering for such a simple thing. My thought is that different implementations can format the trace output differently. Like one for outputting it in a binary format etc. Basically, to provide a facility to easily extend the library.
 3. Capture data buffers/shaders/mappings/textures etc.
     * This is related to #1 and #2. Really just capture *all* the data that is flowing to/from the GPU and store it.
+4. Profiler
+    * Not only is a trace helpful, but so is performance analysis!
+5. Make safer(?)
+    * Honestly im surprised that it works as well as it does currently. 
 
