@@ -39,11 +39,10 @@ where
                     pub unsafe extern "C" fn gl{name}({params}) -> {return_type}{{
                         
                         let hook = crate::GLHooker::get_hook("gl{name}").unwrap();
-                        let file = hook.get_userdata_mut::<String>().unwrap();
-                        let mut file = std::fs::OpenOptions::new().write(true).append(true).create(true).open(file).unwrap();
-                        //dbg!(file);
-                        let _ = writeln!(file,"gl{name}({arg_names})",{arg_values}).unwrap();
-                        let _ = file.flush();
+                        let trace = hook.get_userdata_mut::<crate::Trace>().unwrap();
+                        
+                        
+                        trace.entries.push(String::from(format!("gl{name}({arg_names})",{arg_values})));
                         if let Ok(addr) = hook.get_target_function() {{
                             let gl_func = core::mem::transmute::<*mut core::ffi::c_void, extern "C" fn({type_signature}) -> {return_type}>(addr);
                             //crate::GLTrace::trace_call().unwrap();
