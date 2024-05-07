@@ -11,7 +11,7 @@ use std::error::Error;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
-pub struct GLTrace {
+pub struct GLTracer {
     pub trace: Trace,
 }
 
@@ -29,7 +29,7 @@ impl Trace {
     }
 }
 
-impl GLTrace {
+impl GLTracer {
     pub fn new() -> Result<Self> {
         GLHooker::init()?;
         let trace = Trace {
