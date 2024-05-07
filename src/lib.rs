@@ -47,4 +47,22 @@ impl GLTracer {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+
+    extern crate gl_loader;
+    use crate::GLTracer;
+
+
+    #[test]
+    fn load_gl_symbol() -> Result<(), Box<dyn std::error::Error>> {
+        let mut gltracer = GLTracer::new()?;
+        gl_loader::init_gl();
+        gl::load_with(|symbol| {
+            if let Err(e) = gltracer.trace_func(symbol) {
+                println!("{}",e);
+            }
+            gl_loader::get_proc_address(symbol) as *const _
+        });
+        Ok(())
+    }
+}
