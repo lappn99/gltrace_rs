@@ -1,4 +1,4 @@
-#![feature(fn_traits)]
+
 mod errors;
 pub mod generator;
 mod hooks;
@@ -6,33 +6,38 @@ pub mod macros;
 pub mod types;
 
 use gl_loader;
-use glhooker::{GLHooker, Hook, HookType};
+use glhooker::{GLHooker, HookDesc, HookType};
 use hooks::get_hook;
-use std::error::Error;
-
-#[macro_use]
-extern crate lazy_static;
+use std::{error::Error, fs::File, io::{Stdout, Write}};
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
-/*
-lazy_static! {
-    static ref TRACE_OUT: Mutex< dyn std::io::Write + Send> = Mutex::new(std::io::stdout());
-}
- */
 pub struct GLTrace;
+
+pub struct GLTraceContext<W>
+where 
+    W: std::io::Write + 'static
+{
+    out: &'static W
+}
+
+
 
 impl GLTrace {
     pub fn init() -> Result<()> {
-        GLHooker::init()?;
-        Ok(())
+        GLHooker::init()
+        
     }
     pub fn trace_func(symbol: &str) -> Result<()> {
-        GLHooker::register_hook(Hook {
-            hook_type: HookType::Inline,
-            source_func_name: symbol,
-            dst_func: get_hook(symbol)?,
-        })
+        
+        let file = Box::new(String::from(format!("./gl_trace.out.{}",std::process::id())));
+        let file = Box::leak(file);
+        
+
+        let hook = HookDesc::new(HookType::Inline, symbol, get_hook(symbol)?)
+            .with_userdata(file);
+        GLHooker::register_hook(hook)
+        
     }
 
     pub fn trace_call() -> Result<()> {

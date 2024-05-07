@@ -37,10 +37,16 @@ where
                     
                     #[allow(non_camel_case_types, non_snake_case, unused_variables,dead_code)]
                     pub unsafe extern "C" fn gl{name}({params}) -> {return_type}{{
-                        println!("Call {name} with {arg_names}", {arg_values});
-                        if let Ok(addr) = crate::GLHooker::get_original_function() {{
+                        
+                        let hook = crate::GLHooker::get_hook("gl{name}").unwrap();
+                        let file = hook.get_userdata_mut::<String>().unwrap();
+                        let mut file = std::fs::OpenOptions::new().write(true).append(true).create(true).open(file).unwrap();
+                        //dbg!(file);
+                        let _ = writeln!(file,"gl{name}({arg_names})",{arg_values}).unwrap();
+                        let _ = file.flush();
+                        if let Ok(addr) = hook.get_target_function() {{
                             let gl_func = core::mem::transmute::<*mut core::ffi::c_void, extern "C" fn({type_signature}) -> {return_type}>(addr);
-                            crate::GLTrace::trace_call().unwrap();
+                            //crate::GLTrace::trace_call().unwrap();
                             gl_func({arg_values})
                         }} else {{
                             panic!();
@@ -72,7 +78,7 @@ where
                 .iter()
                 .map(|binding| { format!("{}", binding.ty) })
                 .collect::<Vec<String>>()
-                .join(", "),
+                .join(", ")
         )?
     }
     Ok(())
