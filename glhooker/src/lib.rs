@@ -97,6 +97,7 @@ impl GLHooker {
             }
         }
     }
+
     pub fn get_hook<'a>(name: &'a str) -> Result<Hook> {
         let handle: HookHandle = unsafe {
             let name = CString::new(name)?;
@@ -112,7 +113,7 @@ impl GLHooker {
     }
 }
 
-impl<'a> Hook {
+impl Hook {
     pub fn get_name(&self) -> Result<&'static str> {
         let name = unsafe {
             let name = glhooker_gethookname(self.internal_hook);
@@ -171,7 +172,6 @@ mod tests {
     use crate::{errors::GLHookerError, GLHooker, HookDesc, HookType};
     use core::ffi::c_void;
     use gl;
-    use libc::user;
     use std::error;
 
     type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
