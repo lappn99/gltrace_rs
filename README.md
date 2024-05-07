@@ -20,7 +20,7 @@ It seems to work best when using a loading library like [gl_loader](https://gith
 extern crate gl_loader;
 use gltrace_rs;
 
-fn load_gl_symbol() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     //Needs to happen before you load the functions, obviously.
     let mut gltracer = GLTracer::new()?;
     gl_loader::init_gl();
@@ -39,13 +39,13 @@ The library pretty much does the rest of the work for you regarding the actual t
 The trace can then be written to whatever implements the `fmt::Write` trait, which is input to the very simple `TraceOutputGenerator` trait which takes all the traces and just writes them into the writer. All in all, to print out the trace to a file it might look like this:
 
 ```
-/*Application code*/
-^^^^^^^^^^^^^^^^^^^^
-
-let mut trace_file = fs::File::create(format!("trace.{}", std::process::id())).unwrap();
-let _ = gltrace.trace.write_trace(gltrace_rs::TraceTextGenerator, &mut trace_file);
-
-}
+    /*Application code*/
+    ^^^^^^^^^^^^^^^^^^^^
+    
+    let mut trace_file = fs::File::create(format!("trace.{}", std::process::id())).unwrap();
+    let _ = gltrace.trace.write_trace(gltrace_rs::TraceTextGenerator, &mut trace_file);
+    
+    }
 ```
 
 > **_NOTE:_**  It is not wise to capture the trace of a *whole* program that you expect to run for a while as memory use will wise very quickly. Instead only the trace of a *single* frame should be captured. As of right now this can be done by simply clearing the `gltracer.trace` Vector after (or before, it depends) your `glClear` call or when you swap buffers. In the future a better facility will be implemented to handle this better. 
@@ -58,6 +58,24 @@ glUniformMatrix4fv(location: 2, count: 1, transpose: 0, value: 0x7fff6d5371a8)
 glDrawArrays(mode: 4, first: 0, count: 36)
 glClear(mask: 16640)
 ```
+> **_NOTE! IMPORTANT!_** By default it will generate hooks for OpenGL 4.5 with with the `Core` profile. This can be changed by setting the following environment variables:
+
+`GLTRACE_OPENGL_VER_MAJOR`: A single digit number denoting the OpenGL spec *major* verison to use.\
+`GLTRACE_OPENGL_VER_MINOR`: A single digit number denoting the OpenGL spec *minor* verison to use.\
+`GLTRACE_OPENGL_PROFILE`: A string indicating which OpenGL spec *profile* to use. This can either be "CORE" for the `Core` profile or "COMPAT" for the `Compatibility` profile.
+
+An easy way to do this is to set them in your .cargo/config.toml. As so:
+
+If I wanted to use `3.3 Compatibility` profile:
+```
+[env]
+GLTRACE_OPENGL_VER_MAJOR = "3"
+GLTRACE_OPENGL_VER_MINOR = "3"
+GLTRACE_OPENGL_PROFILE =  "COMPAT"
+```
+This can then be verified where ever you configured cargo to output build script stuff. Which should have the line:\
+`Generating hooks for OpenGL version 3.3, Compatibility profile`
+
 
 ## Future
 

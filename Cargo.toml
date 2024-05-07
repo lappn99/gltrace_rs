@@ -8,9 +8,6 @@ edition = "2021"
 
 build="./build/main.rs"
 
-
-
-
 [dependencies]
 glhooker = {path = "./glhooker", version = "*"}
 gl_loader = "*"
@@ -22,3 +19,4 @@ lazy_static = "*"
 
 [build-dependencies]
 gl_generator = "*"
+
