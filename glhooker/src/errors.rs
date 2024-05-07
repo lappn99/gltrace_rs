@@ -9,7 +9,7 @@ pub enum GLHookerError {
     GetHookError(String),
     GetHookNameError,
     GetTargetFunctionError,
-    GetUserDataError
+    GetUserDataError,
 }
 
 impl fmt::Display for GLHookerError {
@@ -21,18 +21,18 @@ impl fmt::Display for GLHookerError {
             }
             GLHookerError::GetOriginalNameError => {
                 write!(f, "Could not get original name")
-            },
+            }
             GLHookerError::GetHookError(ref name) => {
-                write!(f,"Could not get hook: {}", name)
-            },
+                write!(f, "Could not get hook: {}", name)
+            }
             GLHookerError::GetHookNameError => {
-                write!(f,"Could not get hook name")
-            },
+                write!(f, "Could not get hook name")
+            }
             GLHookerError::GetTargetFunctionError => {
-                write!(f,"Could not get target function pointer for hook")
-            },
+                write!(f, "Could not get target function pointer for hook")
+            }
             GLHookerError::GetUserDataError => {
-                write!(f,"Could not get user data for hook")
+                write!(f, "Could not get user data for hook")
             }
         }
     }

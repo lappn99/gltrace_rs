@@ -1,4 +1,4 @@
 use crate::types::types;
-use std::{borrow::BorrowMut, io::Write};
+use std::io::Write;
 
 include!(concat!(env!("OUT_DIR"), "/hooks.rs"));

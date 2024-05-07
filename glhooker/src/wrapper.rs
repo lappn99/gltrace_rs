@@ -14,14 +14,13 @@ pub struct GLHookerRegisterHookDesc {
     pub src_func_name: [u8; 64],
     pub dst_func: *mut c_void,
     pub userdata_size: usize,
-    pub userdata: *const c_void
-
+    pub userdata: *const c_void,
 }
 
 #[repr(C)]
 #[derive(Debug)]
-pub struct InternalHook{
-    _data: [u8;0],
+pub struct InternalHook {
+    _data: [u8; 0],
     _marker: core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>,
 }
 

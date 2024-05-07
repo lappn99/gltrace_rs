@@ -1,5 +1,5 @@
-use gl_generator::{Binding, Generator, Registry};
-use std::{fmt::format, io};
+use gl_generator::{Generator, Registry};
+use std::io;
 
 pub struct HookGenerator;
 
