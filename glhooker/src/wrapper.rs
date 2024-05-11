@@ -2,15 +2,7 @@ use core::ffi::c_void;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
-pub enum GLHookerHookType {
-    Inline,
-    Intercept,
-}
-
-#[repr(C)]
-#[derive(Debug, Clone, Copy)]
 pub struct GLHookerRegisterHookDesc {
-    pub hook_type: GLHookerHookType,
     pub src_func_name: [u8; 64],
     pub dst_func: *mut c_void,
     pub userdata_size: usize,

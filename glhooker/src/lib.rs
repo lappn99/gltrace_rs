@@ -12,13 +12,8 @@ use std::{
 use errors::GLHookerError;
 use wrapper::{
     glhooker_gethook, glhooker_gethookname, glhooker_gethookuserdata, glhooker_getoriginalfunction,
-    glhooker_init, GLHookerHookType, GLHookerRegisterHookDesc, HookHandle,
+    glhooker_init, GLHookerRegisterHookDesc, HookHandle,
 };
-
-pub enum HookType {
-    Inline,
-    Intercept,
-}
 
 pub struct GLHooker;
 
@@ -31,16 +26,14 @@ pub struct HookDesc<'a, T>
 where
     T: Sized,
 {
-    pub hook_type: HookType,
     pub source_func_name: &'a str,
     pub dst_func: *mut c_void,
     pub userdata: Option<&'a T>,
 }
 
 impl<'a, T> HookDesc<'a, T> {
-    pub fn new(hook_type: HookType, source_name: &'a str, dest_func: *mut c_void) -> Self {
+    pub fn new(source_name: &'a str, dest_func: *mut c_void) -> Self {
         HookDesc {
-            hook_type: hook_type,
             source_func_name: source_name,
             dst_func: dest_func,
             userdata: None,
@@ -69,10 +62,6 @@ impl GLHooker {
     pub fn register_hook<'a, T>(hook: HookDesc<'a, T>) -> Result<()> {
         unsafe {
             let mut desc = wrapper::GLHookerRegisterHookDesc {
-                hook_type: match hook.hook_type {
-                    HookType::Inline => GLHookerHookType::Inline,
-                    HookType::Intercept => GLHookerHookType::Intercept,
-                },
                 src_func_name: [0; 64],
                 dst_func: hook.dst_func,
                 userdata_size: if hook.userdata.is_some() {
@@ -191,7 +180,7 @@ mod tests {
     pub fn test_register_hook_one() -> Result<()> {
         GLHooker::init()?;
         gl_loader::init_gl();
-        let hook = HookDesc::<()>::new(HookType::Intercept, "glBindBuffer", hook as *mut c_void);
+        let hook = HookDesc::<()>::new( "glBindBuffer", hook as *mut c_void);
 
         assert_eq!(GLHooker::register_hook(hook)?, ());
         Ok(())
@@ -202,7 +191,7 @@ mod tests {
         GLHooker::init()?;
         gl_loader::init_gl();
         let hook: HookDesc<_> =
-            HookDesc::<()>::new(HookType::Intercept, "glBindBuffer", hook as *mut c_void);
+            HookDesc::<()>::new("glBindBuffer", hook as *mut c_void);
 
         GLHooker::register_hook(hook)?;
         gl::load_with(|f| gl_loader::get_proc_address(f) as *const _);
@@ -213,7 +202,7 @@ mod tests {
     pub fn test_get_hook() -> Result<()> {
         GLHooker::init()?;
         let hook: HookDesc<_> =
-            HookDesc::<()>::new(HookType::Intercept, "glBindBuffer", hook as *mut c_void);
+            HookDesc::<()>::new( "glBindBuffer", hook as *mut c_void);
 
         GLHooker::register_hook(hook)?;
         let _ = GLHooker::get_hook("glBindBuffer").unwrap();
@@ -225,7 +214,7 @@ mod tests {
     pub fn test_get_bad_hook() -> Result<()> {
         GLHooker::init()?;
         let hook: HookDesc<_> =
-            HookDesc::<()>::new(HookType::Intercept, "glBindBuffer", hook as *mut c_void);
+            HookDesc::<()>::new( "glBindBuffer", hook as *mut c_void);
 
         GLHooker::register_hook(hook)?;
         let hook = GLHooker::get_hook("glBinduffer");
@@ -238,7 +227,7 @@ mod tests {
     pub fn test_get_hook_name() -> Result<()> {
         GLHooker::init()?;
         let hook: HookDesc<_> =
-            HookDesc::<()>::new(HookType::Intercept, "glBindBuffer", hook as *mut c_void);
+            HookDesc::<()>::new( "glBindBuffer", hook as *mut c_void);
 
         GLHooker::register_hook(hook)?;
         let hook = GLHooker::get_hook("glBindBuffer").unwrap();
@@ -252,7 +241,7 @@ mod tests {
         let userdata = 69;
 
         let hook: HookDesc<_> =
-            HookDesc::<i32>::new(HookType::Intercept, "glBindBuffer", hook as *mut c_void)
+            HookDesc::<i32>::new( "glBindBuffer", hook as *mut c_void)
                 .with_userdata(&userdata);
         GLHooker::register_hook(hook)?;
         let hook = GLHooker::get_hook("glBindBuffer").unwrap();

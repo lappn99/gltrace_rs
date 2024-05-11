@@ -5,11 +5,13 @@ pub mod macros;
 pub mod types;
 
 pub use crate::generator::text_generator::TraceTextGenerator;
-use glhooker::{GLHooker, HookDesc, HookType};
+use glhooker::{GLHooker, HookDesc};
 use hooks::get_hook;
-use std::error::Error;
+use std::{any::TypeId, collections::HashMap, error::Error};
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
+
+
 
 pub struct GLTracer {
     pub trace: Trace,
@@ -17,6 +19,12 @@ pub struct GLTracer {
 
 pub struct Trace {
     pub entries: Box<Vec<String>>,
+}
+
+pub struct TraceEntry {
+    proc: String,
+    args: HashMap<String, TypeId>
+
 }
 
 impl Trace {
@@ -35,13 +43,12 @@ impl GLTracer {
         let trace = Trace {
             entries: Box::new(Vec::new()),
         };
-
         Ok(Self { trace: trace })
     }
 
     pub fn trace_func(&mut self, symbol: &str) -> Result<()> {
         let hook =
-            HookDesc::new(HookType::Inline, symbol, get_hook(symbol)?).with_userdata(&self.trace);
+            HookDesc::new(symbol, get_hook(symbol)?).with_userdata(&self.trace);
         GLHooker::register_hook(hook)
     }
 }
