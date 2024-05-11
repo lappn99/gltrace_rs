@@ -65,12 +65,14 @@ impl GLHooker {
             let mut desc = wrapper::GLHookerRegisterHookDesc {
                 src_func_name: [0; 64], //Initialize name to all zeroes
                 dst_func: hook.dst_func,
-                userdata_size: if hook.userdata.is_some() {  //If there is not userdata, set the size of it to 0
+                userdata_size: if hook.userdata.is_some() {
+                    //If there is not userdata, set the size of it to 0
                     std::mem::size_of::<T>()
                 } else {
                     0
                 },
-                userdata: if let Some(userdata) = hook.userdata { //If there is not userdata, set it to null
+                userdata: if let Some(userdata) = hook.userdata {
+                    //If there is not userdata, set it to null
                     std::ptr::from_ref(userdata) as *const c_void
                 } else {
                     std::ptr::null()
@@ -183,7 +185,7 @@ mod tests {
     pub fn test_register_hook_one() -> Result<()> {
         GLHooker::init()?;
         gl_loader::init_gl();
-        let hook = HookDesc::<()>::new( "glBindBuffer", hook as *mut c_void);
+        let hook = HookDesc::<()>::new("glBindBuffer", hook as *mut c_void);
 
         assert_eq!(GLHooker::register_hook(hook)?, ());
         Ok(())
@@ -193,8 +195,7 @@ mod tests {
     pub fn test_load_one() -> Result<()> {
         GLHooker::init()?;
         gl_loader::init_gl();
-        let hook: HookDesc<_> =
-            HookDesc::<()>::new("glBindBuffer", hook as *mut c_void);
+        let hook: HookDesc<_> = HookDesc::<()>::new("glBindBuffer", hook as *mut c_void);
 
         GLHooker::register_hook(hook)?;
         gl::load_with(|f| gl_loader::get_proc_address(f) as *const _);
@@ -204,8 +205,7 @@ mod tests {
     #[test]
     pub fn test_get_hook() -> Result<()> {
         GLHooker::init()?;
-        let hook: HookDesc<_> =
-            HookDesc::<()>::new( "glBindBuffer", hook as *mut c_void);
+        let hook: HookDesc<_> = HookDesc::<()>::new("glBindBuffer", hook as *mut c_void);
 
         GLHooker::register_hook(hook)?;
         let _ = GLHooker::get_hook("glBindBuffer").unwrap();
@@ -216,8 +216,7 @@ mod tests {
     #[test]
     pub fn test_get_bad_hook() -> Result<()> {
         GLHooker::init()?;
-        let hook: HookDesc<_> =
-            HookDesc::<()>::new( "glBindBuffer", hook as *mut c_void);
+        let hook: HookDesc<_> = HookDesc::<()>::new("glBindBuffer", hook as *mut c_void);
 
         GLHooker::register_hook(hook)?;
         let hook = GLHooker::get_hook("glBinduffer");
@@ -229,8 +228,7 @@ mod tests {
     #[test]
     pub fn test_get_hook_name() -> Result<()> {
         GLHooker::init()?;
-        let hook: HookDesc<_> =
-            HookDesc::<()>::new( "glBindBuffer", hook as *mut c_void);
+        let hook: HookDesc<_> = HookDesc::<()>::new("glBindBuffer", hook as *mut c_void);
 
         GLHooker::register_hook(hook)?;
         let hook = GLHooker::get_hook("glBindBuffer").unwrap();
@@ -244,8 +242,7 @@ mod tests {
         let userdata = 69;
 
         let hook: HookDesc<_> =
-            HookDesc::<i32>::new( "glBindBuffer", hook as *mut c_void)
-                .with_userdata(&userdata);
+            HookDesc::<i32>::new("glBindBuffer", hook as *mut c_void).with_userdata(&userdata);
         GLHooker::register_hook(hook)?;
         let hook = GLHooker::get_hook("glBindBuffer").unwrap();
         let userdata = hook.get_userdata::<i32>().unwrap();

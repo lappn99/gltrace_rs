@@ -38,8 +38,7 @@ impl GLTracer {
     }
 
     pub fn trace_func(&mut self, symbol: &str) -> Result<()> {
-        let hook =
-            HookDesc::new(symbol, get_hook(symbol)?).with_userdata(&self.trace);
+        let hook = HookDesc::new(symbol, get_hook(symbol)?).with_userdata(&self.trace);
         GLHooker::register_hook(hook)
     }
 }
@@ -50,14 +49,13 @@ mod tests {
     extern crate gl_loader;
     use crate::GLTracer;
 
-
     #[test]
     fn load_gl_symbol() -> Result<(), Box<dyn std::error::Error>> {
         let mut gltracer = GLTracer::new()?;
         gl_loader::init_gl();
         gl::load_with(|symbol| {
             if let Err(e) = gltracer.trace_func(symbol) {
-                println!("{}",e);
+                println!("{}", e);
             }
             gl_loader::get_proc_address(symbol) as *const _
         });

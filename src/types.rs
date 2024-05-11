@@ -1,5 +1,4 @@
-use core::ffi::{*};
-
+use core::ffi::*;
 
 //Types for the hook generator corresponding to OpenGL types
 //https://www.khronos.org/opengl/wiki/OpenGL_Type
