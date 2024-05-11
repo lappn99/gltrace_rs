@@ -10,6 +10,8 @@ It works by hooking into OpenGL calls using my other library I created for this 
 
 ## Use
 
+> **_NOTE:_** Linux-x86_64 *only* right now.
+
 First the aforementioned [gl_hooker](https://github.com/lappn99/gl_hooker) is required on your system. See install instructions for that. 
 
 Obviously easy integration into the program is the #1 priority for something like this. I believe the API as it stands now is *decent* regarding this but it will probably change.

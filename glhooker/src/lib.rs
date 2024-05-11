@@ -11,7 +11,7 @@ use std::{
 
 use errors::GLHookerError;
 use wrapper::{
-    glhooker_gethook, glhooker_gethookname, glhooker_gethookuserdata, glhooker_getoriginalfunction,
+    glhooker_gethook, glhooker_gethookname, glhooker_gethookuserdata, glhooker_gethookoriginalfunction,
     glhooker_init, GLHookerRegisterHookDesc, HookHandle,
 };
 
@@ -121,7 +121,7 @@ impl Hook {
     }
 
     pub fn get_target_function(&self) -> Result<*mut c_void> {
-        let func = unsafe { glhooker_getoriginalfunction(self.internal_hook) };
+        let func = unsafe { glhooker_gethookoriginalfunction(self.internal_hook) };
 
         if func == std::ptr::null_mut() {
             Err(GLHookerError::GetTargetFunctionError.into())
