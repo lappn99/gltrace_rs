@@ -1,6 +1,8 @@
-use std::os::raw::*;
-//https://www.khronos.org/opengl/wiki/OpenGL_Type
+use core::ffi::{*};
 
+
+//Types for the hook generator corresponding to OpenGL types
+//https://www.khronos.org/opengl/wiki/OpenGL_Type
 pub mod types {
     pub type GLboolean = super::c_uchar;
     pub type GLbyte = super::c_uchar;

@@ -9,6 +9,7 @@ pub struct GLHookerRegisterHookDesc {
     pub userdata: *const c_void,
 }
 
+//Apparently this is how I should do structs to Opaque pointers in C
 #[repr(C)]
 #[derive(Debug)]
 pub struct InternalHook {

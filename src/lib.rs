@@ -1,17 +1,14 @@
 mod errors;
 pub mod generator;
 mod hooks;
-pub mod macros;
 pub mod types;
 
 pub use crate::generator::text_generator::TraceTextGenerator;
 use glhooker::{GLHooker, HookDesc};
 use hooks::get_hook;
-use std::{any::TypeId, collections::HashMap, error::Error};
+use std::error::Error;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
-
-
 
 pub struct GLTracer {
     pub trace: Trace,
@@ -19,12 +16,6 @@ pub struct GLTracer {
 
 pub struct Trace {
     pub entries: Box<Vec<String>>,
-}
-
-pub struct TraceEntry {
-    proc: String,
-    args: HashMap<String, TypeId>
-
 }
 
 impl Trace {

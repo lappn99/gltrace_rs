@@ -61,21 +61,24 @@ impl GLHooker {
 
     pub fn register_hook<'a, T>(hook: HookDesc<'a, T>) -> Result<()> {
         unsafe {
+            //Convert to wrapper struct to pass on to lib
             let mut desc = wrapper::GLHookerRegisterHookDesc {
-                src_func_name: [0; 64],
+                src_func_name: [0; 64], //Initialize name to all zeroes
                 dst_func: hook.dst_func,
-                userdata_size: if hook.userdata.is_some() {
+                userdata_size: if hook.userdata.is_some() {  //If there is not userdata, set the size of it to 0
                     std::mem::size_of::<T>()
                 } else {
                     0
                 },
-                userdata: if let Some(userdata) = hook.userdata {
+                userdata: if let Some(userdata) = hook.userdata { //If there is not userdata, set it to null
                     std::ptr::from_ref(userdata) as *const c_void
                 } else {
                     std::ptr::null()
                 },
             };
 
+            //Copy name of hook
+            //Since in the library its a static array and not a pointer, we have to set it in this weird way.
             let n = std::cmp::min(hook.source_func_name.len(), 64);
             desc.src_func_name[0..n].copy_from_slice(&hook.source_func_name.as_bytes()[0..n]);
 
@@ -158,7 +161,7 @@ impl Hook {
 #[cfg(test)]
 mod tests {
 
-    use crate::{errors::GLHookerError, GLHooker, HookDesc, HookType};
+    use crate::{errors::GLHookerError, GLHooker, HookDesc};
     use core::ffi::c_void;
     use gl;
     use std::error;
