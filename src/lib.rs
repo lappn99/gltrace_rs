@@ -2,11 +2,13 @@ mod errors;
 pub mod generator;
 mod hooks;
 pub mod types;
+pub mod trace;
 
 pub use crate::generator::text_generator::TraceTextGenerator;
 use glhooker::{GLHooker, HookDesc};
 use hooks::get_hook;
 use std::error::Error;
+use trace::Trace;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
@@ -14,19 +16,6 @@ pub struct GLTracer {
     pub trace: Trace,
 }
 
-pub struct Trace {
-    pub entries: Box<Vec<String>>,
-}
-
-impl Trace {
-    pub fn write_trace<W, G>(&mut self, trace_generator: G, writer: &mut W) -> Result<()>
-    where
-        W: std::io::Write,
-        G: generator::TraceOutputGenerator,
-    {
-        trace_generator.write(writer, self)
-    }
-}
 
 impl GLTracer {
     pub fn new() -> Result<Self> {
@@ -36,7 +25,6 @@ impl GLTracer {
         };
         Ok(Self { trace: trace })
     }
-
     pub fn trace_func(&mut self, symbol: &str) -> Result<()> {
         let hook = HookDesc::new(symbol, get_hook(symbol)?).with_userdata(&self.trace);
         GLHooker::register_hook(hook)

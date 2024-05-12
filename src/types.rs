@@ -4,7 +4,7 @@ use core::ffi::*;
 //https://www.khronos.org/opengl/wiki/OpenGL_Type
 pub mod types {
     pub type GLboolean = super::c_uchar;
-    pub type GLbyte = super::c_uchar;
+    pub type GLbyte = super::c_char;
     pub type GLshort = super::c_short;
     pub type GLushort = super::c_ushort;
     pub type GLint = super::c_int;
@@ -18,7 +18,7 @@ pub mod types {
     pub type GLsizeiptr = isize;
     pub type GLsync = *const GLSyncHandle;
     pub type GLbitfield = super::c_int;
-    pub type GLhlaf = super::c_ushort;
+    pub type GLhalf = super::c_ushort;
     pub type GLfloat = super::c_float;
     pub type GLclampf = super::c_float;
     pub type GLdouble = super::c_double;

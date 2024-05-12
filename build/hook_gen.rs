@@ -26,6 +26,8 @@ where
     )
 }
 
+
+
 fn write_hookfuncs<W>(registry: &Registry, dest: &mut W) -> io::Result<()>
 where
     W: io::Write,
@@ -40,9 +42,10 @@ where
                         
                         let hook = crate::GLHooker::get_hook("gl{name}").unwrap();
                         let trace = hook.get_userdata_mut::<crate::Trace>().unwrap();
-                        
-                        
-                        trace.entries.push(String::from(format!("gl{name}({arg_names})",{arg_values})));
+                        let mut trace_entry = crate::trace::TraceEntry::new("{name}");
+                        with_params!(&mut trace_entry;{entry_params});
+                        trace.entries.push(trace_entry);
+                        //trace.entries.push(String::from(format!("gl{name}({arg_names})",{arg_values})));
                         if let Ok(addr) = hook.get_target_function() {{
                             let gl_func = core::mem::transmute::<*mut core::ffi::c_void, extern "C" fn({type_signature}) -> {return_type}>(addr);
                             //crate::GLTrace::trace_call().unwrap();
@@ -77,7 +80,13 @@ where
                 .iter()
                 .map(|binding| { format!("{}", binding.ty) })
                 .collect::<Vec<String>>()
-                .join(", ")
+                .join(", "),
+            entry_params = cmd
+                .params
+                .iter()
+                .map(|binding| { format!(" param \"{}\"; crate::trace::enums::TraceEntryParamValue::from({}); {}", binding.ident, binding.ident,binding.ty) })
+                .collect::<Vec<String>>()
+                .join(", "),
         )?
     }
     Ok(())
