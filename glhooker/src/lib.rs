@@ -1,7 +1,5 @@
-#![feature(fn_traits)]
-#![feature(tuple_trait)]
-pub mod errors;
 
+pub mod errors;
 mod wrapper;
 
 use std::{
