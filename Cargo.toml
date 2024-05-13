@@ -13,6 +13,7 @@ glhooker = {path = "./glhooker", version = "*"}
 gl_loader = "*"
 gl = "*"
 lazy_static = "*"
+chrono = "*"
 
 [dev-dependencies]
 

@@ -22,6 +22,7 @@ impl GLTracer {
         GLHooker::init()?;
         let trace = Trace {
             entries: Box::new(Vec::new()),
+            start_time: std::time::SystemTime::now()
         };
         Ok(Self { trace: trace })
     }

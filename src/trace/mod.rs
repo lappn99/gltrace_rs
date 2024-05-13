@@ -3,6 +3,7 @@ use crate::generator;
 
 pub mod enums;
 use enums::TraceEntryParamValue;
+use std::time::{self, SystemTime};
 
 #[derive(Debug, Clone)]
 pub struct TraceParam(pub String,  pub TraceEntryParamValue);
@@ -10,12 +11,15 @@ pub struct TraceParam(pub String,  pub TraceEntryParamValue);
 #[derive(Debug, Clone)]
 pub struct TraceEntry {
     pub function: String,
-    pub params: Vec<TraceParam>
+    pub params: Option<Vec<TraceParam>>,
+    pub time_start: Option<time::SystemTime>,
+    pub time_end: Option<time::SystemTime>
 
 }
 
 pub struct Trace {
     pub entries: Box<Vec<TraceEntry>>,
+    pub start_time: time::SystemTime
 }
 
 impl Trace {
@@ -26,22 +30,47 @@ impl Trace {
     {
         trace_generator.write(writer, self)
     }
+
+    pub fn reset(&mut self) {
+        self.entries.clear();
+        self.start_time = time::SystemTime::now();
+    }
 }
 
 impl TraceEntry {
     pub fn new(function: &str) -> Self {
         Self {
             function: String::from(function),
-            params: Vec::new()
+            params: None,
+            time_start: None,
+            time_end: None
+
         }
     }
 
-    pub fn with_param<T>(&mut self, name: Option<&str>, value: Option<TraceEntryParamValue>) -> &Self {
-        if name.is_some() && value.is_some() {
-            self.params.push(TraceParam(String::from(name.unwrap()),TraceEntryParamValue::from(value.unwrap())));
+    pub fn with_param<T>(&mut self, name: &str, value: TraceEntryParamValue) -> &Self {
+        
+        if let None = self.params {
+            self.params = Some(Vec::new());
         }
+        self.params.as_mut().unwrap().push(TraceParam(String::from(name),TraceEntryParamValue::from(value)));
+        
         
         self
+    }
+
+    pub fn with_start_time(self) -> Self {
+        return TraceEntry {
+            time_start: Some(time::SystemTime::now()),
+            ..self
+        }
+    }
+
+    pub fn with_end_time(self) -> Self {
+        return TraceEntry{
+            time_end: Some(time::SystemTime::now()),
+            ..self
+        }
     }
 }
 

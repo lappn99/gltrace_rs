@@ -37,22 +37,25 @@ where
             dest,
             r#"
                     
-                    #[allow(non_camel_case_types, non_snake_case, unused_variables,dead_code)]
+                    #[allow(non_camel_case_types, non_snake_case, unused_variables,dead_code,unused_mut)]
                     pub unsafe extern "C" fn gl{name}({params}) -> {return_type}{{
                         
                         let hook = crate::GLHooker::get_hook("gl{name}").unwrap();
                         let trace = hook.get_userdata_mut::<crate::Trace>().unwrap();
                         let mut trace_entry = crate::trace::TraceEntry::new("{name}");
                         with_params!(&mut trace_entry;{entry_params});
-                        trace.entries.push(trace_entry);
-                        //trace.entries.push(String::from(format!("gl{name}({arg_names})",{arg_values})));
+                        
                         if let Ok(addr) = hook.get_target_function() {{
                             let gl_func = core::mem::transmute::<*mut core::ffi::c_void, extern "C" fn({type_signature}) -> {return_type}>(addr);
-                            //crate::GLTrace::trace_call().unwrap();
-                            gl_func({arg_values})
+                            let trace_entry = trace_entry.with_start_time();
+                            let result = gl_func({arg_values});
+                            let trace_entry = trace_entry.with_end_time();
+                            trace.entries.push(trace_entry);
+                            result
                         }} else {{
                             panic!();
                         }}
+                        
                     }}
                 "#,
             name = cmd.proto.ident,
@@ -61,12 +64,6 @@ where
                 .params
                 .iter()
                 .map(|binding| { format!("{}: {}", binding.ident, binding.ty) })
-                .collect::<Vec<String>>()
-                .join(", "),
-            arg_names = cmd
-                .params
-                .iter()
-                .map(|binding| { format!("{}: {{:?}}", binding.ident) })
                 .collect::<Vec<String>>()
                 .join(", "),
             arg_values = cmd
