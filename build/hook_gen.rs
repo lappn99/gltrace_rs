@@ -1,5 +1,5 @@
 use gl_generator::{Generator, Registry};
-use std::{borrow::Borrow, fmt::format, io};
+use std::io;
 
 pub struct HookGenerator;
 
@@ -35,7 +35,7 @@ where
         dest,
         "pub mod gl {{\nuse super::__gl_imports;\nuse super::types;"
     )?;
-    writeln!(dest, "pub struct funcs;")?;
+    writeln!(dest, "#[allow(non_camel_case_types)]\npub struct funcs;")?;
     writeln!(dest, "\nimpl funcs{{")?;
     for cmd in &registry.cmds {
         write!(
@@ -76,7 +76,10 @@ where
     }
 
     writeln!(dest, "}}")?;
-    writeln!(dest, "#[allow(non_camel_case_types)]\npub mod enums{{\n use super::types;")?;
+    writeln!(
+        dest,
+        "#[allow(non_camel_case_types)]\npub mod enums{{\n use super::types;"
+    )?;
 
     for enm in &registry.enums {
         let types_prefix = "types::";
@@ -91,8 +94,6 @@ where
                 false => String::new(),
             },
         )?;
-        
-        
     }
 
     writeln!(dest, "}}")?;

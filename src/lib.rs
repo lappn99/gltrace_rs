@@ -10,10 +10,9 @@ pub mod types;
 pub use crate::generator::html_generator::TraceHtmlGenerator;
 pub use crate::generator::text_generator::TraceTextGenerator;
 use glhooker::{GLHooker, HookDesc};
-#[cfg(feature = "gpu_queries")]
-use gpu_query::QueryObject;
+
 use hooks::get_hook;
-use std::{default, error::Error};
+use std::error::Error;
 use trace::Trace;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -30,7 +29,7 @@ impl GLTracer {
             start_time: std::time::SystemTime::now(),
 
             #[cfg(feature = "gpu_queries")]
-            query_object: None
+            query_object: None,
         };
 
         Ok(Self { trace: trace })

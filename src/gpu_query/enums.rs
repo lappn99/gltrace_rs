@@ -1,4 +1,7 @@
-use crate::hooks::gl::enums::{SAMPLES_PASSED, ANY_SAMPLES_PASSED, ANY_SAMPLES_PASSED_CONSERVATIVE, PRIMITIVES_GENERATED, TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, TIME_ELAPSED};
+use crate::hooks::gl::enums::{
+    ANY_SAMPLES_PASSED, ANY_SAMPLES_PASSED_CONSERVATIVE, PRIMITIVES_GENERATED, SAMPLES_PASSED,
+    TIME_ELAPSED, TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
+};
 use crate::types::types::GLenum;
 
 pub enum QueryTarget {
@@ -8,8 +11,7 @@ pub enum QueryTarget {
     PrimitivesGenerated,
     TransformFeedbackPrimitivesWritten,
     TimeElapsed,
-    Unknown
-
+    Unknown,
 }
 
 impl From<GLenum> for QueryTarget {
@@ -19,9 +21,11 @@ impl From<GLenum> for QueryTarget {
             ANY_SAMPLES_PASSED => QueryTarget::AnySamplesPassed,
             ANY_SAMPLES_PASSED_CONSERVATIVE => QueryTarget::AnySamplesPassedConservative,
             PRIMITIVES_GENERATED => QueryTarget::PrimitivesGenerated,
-            TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN => QueryTarget::TransformFeedbackPrimitivesWritten,
+            TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN => {
+                QueryTarget::TransformFeedbackPrimitivesWritten
+            }
             TIME_ELAPSED => QueryTarget::TimeElapsed,
-            _ => QueryTarget::Unknown
+            _ => QueryTarget::Unknown,
         }
     }
 }
@@ -33,9 +37,11 @@ impl From<QueryTarget> for GLenum {
             QueryTarget::AnySamplesPassed => ANY_SAMPLES_PASSED,
             QueryTarget::AnySamplesPassedConservative => ANY_SAMPLES_PASSED_CONSERVATIVE,
             QueryTarget::PrimitivesGenerated => PRIMITIVES_GENERATED,
-            QueryTarget::TransformFeedbackPrimitivesWritten => TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
+            QueryTarget::TransformFeedbackPrimitivesWritten => {
+                TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN
+            }
             QueryTarget::TimeElapsed => TIME_ELAPSED,
-            _ => 0
+            _ => 0,
         }
     }
 }

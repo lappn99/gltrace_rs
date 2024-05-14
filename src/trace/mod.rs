@@ -1,4 +1,4 @@
-use crate::{generator, types::types};
+use crate::generator;
 
 #[cfg(feature = "gpu_queries")]
 use crate::gpu_query::enums::QueryTarget;
@@ -7,7 +7,7 @@ pub mod enums;
 #[cfg(feature = "gpu_queries")]
 use crate::gpu_query::QueryObject;
 use enums::TraceEntryParamValue;
-use std::time::{self, SystemTime};
+use std::time::{self};
 
 #[derive(Debug, Clone)]
 pub struct TraceParam(pub String, pub TraceEntryParamValue);
@@ -50,7 +50,6 @@ impl Trace {
             query_object.begin_query(QueryTarget::TimeElapsed)?;
         }
         Ok(())
-
     }
 
     pub fn end(&self) -> super::Result<()> {
@@ -60,8 +59,6 @@ impl Trace {
         }
         Ok(())
     }
-
-    
 }
 
 impl TraceEntry {

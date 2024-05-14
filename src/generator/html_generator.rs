@@ -1,12 +1,11 @@
-
 use std::{env, time::Duration};
 
 #[cfg(feature = "gpu_queries")]
 use crate::gpu_query::QueryResult;
 
 use super::TraceOutputGenerator;
+use crate::types::types::GLuint64;
 use chrono::{DateTime, Utc};
-use crate::types::types::{self, GLint,GLuint,GLuint64};
 
 pub struct TraceHtmlGenerator;
 
@@ -64,19 +63,16 @@ impl TraceHtmlGenerator {
                 {
                     if let Some(query_object) = &trace.query_object {
                         while query_object.query_result_available().unwrap() == false {}
-                        let gpu_time: GLuint64 = query_object.query_result().unwrap_or(Default::default());
+                        let gpu_time: GLuint64 =
+                            query_object.query_result().unwrap_or(Default::default());
                         let gpu_time: Duration = Duration::from_nanos(gpu_time);
                         writeln!(
                             dest,
                             "<p>Total trace time(GPU): <b>{} µs</b></p>",
                             gpu_time.as_micros()
-                            
                         )?;
-                        
                     }
-                   
                 }
-                
             }
         }
         writeln!(dest, "</header>")?;

@@ -1,5 +1,4 @@
 use core::fmt;
-use std::fmt::write;
 
 use crate::types::types::GLenum;
 
@@ -7,18 +6,22 @@ use crate::types::types::GLenum;
 pub enum GPUQueryError {
     UnknownTargetError(GLenum),
     InvalidNameError,
-    QueryResultError
+    QueryResultError,
 }
 
 impl fmt::Display for GPUQueryError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-             GPUQueryError::UnknownTargetError(target) => write!(f,"Unknown target for Query Object: {}", target),
-             GPUQueryError::InvalidNameError => write!(f, "Invalid Query Object. Not initialized or could not be created"),
-             GPUQueryError::QueryResultError => write!(f, "Could not get query result")
-            
+            GPUQueryError::UnknownTargetError(target) => {
+                write!(f, "Unknown target for Query Object: {}", target)
+            }
+            GPUQueryError::InvalidNameError => write!(
+                f,
+                "Invalid Query Object. Not initialized or could not be created"
+            ),
+            GPUQueryError::QueryResultError => write!(f, "Could not get query result"),
         }
     }
 }
 
-impl std::error::Error for GPUQueryError{}
+impl std::error::Error for GPUQueryError {}
