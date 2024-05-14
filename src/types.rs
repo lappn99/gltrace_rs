@@ -13,7 +13,7 @@ pub mod types {
     pub type GLint64 = super::c_long;
     pub type GLuint64 = super::c_ulong;
     pub type GLsizei = super::c_int;
-    pub type GLenum = super::c_int;
+    pub type GLenum = super::c_uint;
     pub type GLintptr = isize;
     pub type GLsizeiptr = isize;
     pub type GLsync = *const GLSyncHandle;

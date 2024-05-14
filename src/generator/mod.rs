@@ -1,5 +1,5 @@
-pub mod text_generator;
 pub mod html_generator;
+pub mod text_generator;
 
 use std::error;
 

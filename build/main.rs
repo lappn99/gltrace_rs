@@ -28,6 +28,8 @@ fn main() {
         _ => Profile::Core,
     };
 
+    check_feature_compatability(ver_major, ver_minor);
+
     println!(
         "Generating hooks for OpenGL version {}.{}, {:?} profile",
         ver_major, ver_minor, profile
@@ -43,4 +45,9 @@ fn main() {
     )
     .write_bindings(HookGenerator, &mut file)
     .unwrap();
+}
+
+fn check_feature_compatability(major: u8, _minor: u8) {
+    #[cfg(feature = "gpu_queries")]
+    assert!(major >= 2, "Feature 'gpu_queries' only available with OpenGL version > 2.0. Please turn it off or use a new OpenGL version");
 }

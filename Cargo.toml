@@ -3,20 +3,24 @@ workspace = { members = ["glhooker"] }
 name = "gltrace_rs"
 version = "0.1.0"
 edition = "2021"
+build="./build/main.rs"
+
+[features]
+default=["gpu_queries"]
+gpu_queries = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-build="./build/main.rs"
+
 
 [dependencies]
 glhooker = {path = "./glhooker", version = "*"}
 gl_loader = "*"
-gl = "*"
 lazy_static = "*"
 chrono = "*"
 
 [dev-dependencies]
-
+gl = "*"
 
 [build-dependencies]
 gl_generator = "*"
