@@ -5,6 +5,7 @@ pub mod types;
 pub mod trace;
 
 pub use crate::generator::text_generator::TraceTextGenerator;
+pub use crate::generator::html_generator::TraceHtmlGenerator;
 use glhooker::{GLHooker, HookDesc};
 use hooks::get_hook;
 use std::error::Error;
@@ -18,6 +19,7 @@ pub struct GLTracer {
 
 
 impl GLTracer {
+
     pub fn new() -> Result<Self> {
         GLHooker::init()?;
         let trace = Trace {
@@ -26,10 +28,16 @@ impl GLTracer {
         };
         Ok(Self { trace: trace })
     }
+
     pub fn trace_func(&mut self, symbol: &str) -> Result<()> {
         let hook = HookDesc::new(symbol, get_hook(symbol)?).with_userdata(&self.trace);
         GLHooker::register_hook(hook)
     }
+
+    pub fn uninstall_hooks(&mut self) {
+        GLHooker::deinit();
+    }
+    
 }
 
 #[cfg(test)]

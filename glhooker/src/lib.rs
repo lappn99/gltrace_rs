@@ -9,8 +9,7 @@ use std::{
 
 use errors::GLHookerError;
 use wrapper::{
-    glhooker_gethook, glhooker_gethookname, glhooker_gethookuserdata, glhooker_gethookoriginalfunction,
-    glhooker_init, GLHookerRegisterHookDesc, HookHandle,
+    glhooker_deinit, glhooker_gethook, glhooker_gethookname, glhooker_gethookoriginalfunction, glhooker_gethookuserdata, glhooker_init, GLHookerRegisterHookDesc, HookHandle
 };
 
 pub struct GLHooker;
@@ -54,6 +53,12 @@ impl GLHooker {
             } else {
                 Ok(())
             }
+        }
+    }
+
+    pub fn deinit() {
+        unsafe {
+            glhooker_deinit();
         }
     }
 
@@ -104,6 +109,8 @@ impl GLHooker {
         }
     }
 }
+
+
 
 impl Hook {
     pub fn get_name(&self) -> Result<&'static str> {

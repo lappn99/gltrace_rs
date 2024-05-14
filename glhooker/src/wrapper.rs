@@ -27,4 +27,5 @@ extern "C" {
     pub fn glhooker_gethook(name: *const u8) -> HookHandle;
     pub fn glhooker_gethookoriginalfunction(handle: HookHandle) -> *mut c_void;
     pub fn glhooker_gethookuserdata(handle: HookHandle) -> *const c_void;
+    pub fn glhooker_deinit();
 }
