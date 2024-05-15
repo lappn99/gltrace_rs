@@ -33,33 +33,47 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         gl_loader::get_proc_address(symbol) as *const _
     });
     Ok(())
-    /*Application code*/
+
+    while(window.should_not_close()) {
+        gltracer.tracer.start();
+        gl_clear(); //Start trace before this so clearing the screen is included in the trace.
+
+        /*Application code*/
+
+        gltracer.tracer.end(); 
+        //Swapping the buffers isn't really an implementation detail that you can really control or is wholly important to debugging and profiling. Usually its used as a demarcation for the boundaries of a 'frame'.
+        //As of now it is not traced. Since this can affect performance; including it would make results less accurate as it would affect the `trace end time`, giving wrong results.
+        swap_buffers(); 
+    }
+    
 
 ```
-The library pretty much does the rest of the work for you regarding the actual tracing. The "trace" can be found in `gltracer.trace` which is a `Box<Vec<String>>` of all the calls made with their parameter values.
+The trace can then be written to whatever implements the `fmt::Write` trait, which is input to the very simple `TraceOutputGenerator` trait which takes all the traces and just writes them into the writer. There are two `TraceOutputGenerator's` implemented:
 
-The trace can then be written to whatever implements the `fmt::Write` trait, which is input to the very simple `TraceOutputGenerator` trait which takes all the traces and just writes them into the writer. All in all, to print out the trace to a file it might look like this:
+* `TraceHtmlGenerator`, which outputs the trace to formatted HTML
+* `TraceTextGenerator`, which just outputs the trace as a text file, with no particular format.
+
+Getting the trace as `HTML` and automatically opening it in your browser:
 
 ```
     /*Application code*/
     ^^^^^^^^^^^^^^^^^^^^
     
-    let mut trace_file = fs::File::create(format!("trace.{}", std::process::id())).unwrap();
-    let _ = gltrace.trace.write_trace(gltrace_rs::TraceTextGenerator, &mut trace_file);
+    let output_file = format!("trace.{}.html", std::process::id());
+    let mut trace_file = File::create(&output_file).unwrap();
+    let _ = gltracer.trace.write_trace(gltrace_rs::TraceHtmlGenerator, &mut trace_file);
+    let output = std::process::Command::new("xdg-open").arg(&output_file).output().unwrap();
+    println!("xdg-open status: {}", output.status);
     
     }
 ```
 
-> **_NOTE:_**  It is not wise to capture the trace of a *whole* program that you expect to run for a while as memory use will wise very quickly. Instead only the trace of a *single* frame should be captured. As of right now this can be done by simply clearing the `gltracer.trace` Vector after (or before, it depends) your `glClear` call or when you swap buffers. In the future a better facility will be implemented to handle this better. 
+> **_NOTE:_**  It is not wise to capture the trace of a *whole* program that you expect to run for a while as memory use will wise very quickly. Instead only the trace of a *single* frame should be captured. As of right now, encapsulate your frame with `trace.start()` and `trace.end()` calls respectively.
 
-The output of one frame then may look like this:
-```
-glUniformMatrix4fv(location: 0, count: 1, transpose: 0, value: 0x7fff6d5373dc)
-glUniformMatrix4fv(location: 1, count: 1, transpose: 0, value: 0x7fff6d537150)
-glUniformMatrix4fv(location: 2, count: 1, transpose: 0, value: 0x7fff6d5371a8)
-glDrawArrays(mode: 4, first: 0, count: 36)
-glClear(mask: 16640)
-```
+The output of one frame then may look like this (WIP):
+
+![image info](./docs/example_output.png)
+
 > **_NOTE! IMPORTANT!_** By default it will generate hooks for OpenGL 4.5 with with the `Core` profile. This can be changed by setting the following environment variables:
 
 `GLTRACE_OPENGL_VER_MAJOR`: A single digit number denoting the OpenGL spec *major* verison to use.\
