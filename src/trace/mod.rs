@@ -36,23 +36,23 @@ impl Trace {
         trace_generator.write(writer, self)
     }
 
-    pub fn reset(&mut self) -> super::Result<()> {
+    pub fn start(&mut self) -> super::Result<()> {
         self.entries.clear();
         self.start_time = time::SystemTime::now();
 
         #[cfg(feature = "gpu_queries")]
         if let Some(query_object) = &self.query_object {
-            query_object.end_query(QueryTarget::TimeElapsed)?;
             query_object.begin_query(QueryTarget::TimeElapsed)?;
         } else {
             self.query_object = Some(QueryObject::new());
             let query_object = self.query_object.as_ref().unwrap();
             query_object.begin_query(QueryTarget::TimeElapsed)?;
         }
+
         Ok(())
     }
 
-    pub fn end(&self) -> super::Result<()> {
+    pub fn end(&mut self) -> super::Result<()> {
         #[cfg(feature = "gpu_queries")]
         if let Some(query_object) = &self.query_object {
             query_object.end_query(QueryTarget::TimeElapsed)?;

@@ -62,7 +62,6 @@ impl TraceHtmlGenerator {
                 #[cfg(feature = "gpu_queries")]
                 {
                     if let Some(query_object) = &trace.query_object {
-                        while query_object.query_result_available().unwrap() == false {}
                         let gpu_time: GLuint64 =
                             query_object.query_result().unwrap_or(Default::default());
                         let gpu_time: Duration = Duration::from_nanos(gpu_time);

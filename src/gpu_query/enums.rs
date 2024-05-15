@@ -14,6 +14,7 @@ pub enum QueryTarget {
     Unknown,
 }
 
+
 impl From<GLenum> for QueryTarget {
     fn from(value: GLenum) -> Self {
         match value {
