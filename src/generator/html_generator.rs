@@ -4,7 +4,7 @@ use std::{env, time::Duration};
 use crate::gpu_query::QueryResult;
 
 use super::TraceOutputGenerator;
-use crate::{trace::resource::TransactionType, types::types::GLuint64};
+use crate::{trace::resource::{ResourceTransaction, TransactionType}, types::types::GLuint64};
 use chrono::{DateTime, Utc};
 
 use itertools::{self, Itertools};
@@ -145,25 +145,20 @@ impl TraceHtmlGenerator {
 
     fn write_resources<W: std::io::Write>( &self,
         dest: &mut W,
-        trace: &crate::Trace
+        trace: &crate::Trace    
         ) -> super::Result<()> {
         
-        for (key, chunk) in &trace.resource_transactions.iter().chunk_by(|el| el.resource) {
-            writeln!(dest,"Resource: {}", key)?;
 
-            for transaction in chunk {
-                match &transaction.transaction_type {
-                    TransactionType::UpdateShaderSource(src) => {
-                        writeln!(dest,"<code>{src}</code>")?;
-                    },
-                    TransactionType::CreateShader => {
-                        writeln!(dest,"Created shader {key}")?;
-                    }
-                }
+        let grouped_transactions = ResourceTransaction::group_transactions(&trace.resource_transactions);
+
+        for (resource, transactions) in grouped_transactions {
+            writeln!(dest, "Transactions for resource: {resource} <br>")?;
+            for transaction in transactions {
+                writeln!(dest, "{} <br>", transaction.transaction_type)?;
             }
-
-
         }
+
+
         Ok(())
 
     }
