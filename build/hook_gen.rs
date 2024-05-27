@@ -1,16 +1,18 @@
 use gl_generator::{Generator, Registry};
 use std::io;
 
-pub struct HookGenerator;
+pub struct HookGenerator<'a> {
+    pub blacklist: Vec<&'a str>
+}
 
-impl Generator for HookGenerator {
+impl<'a> Generator for HookGenerator<'a> {
     fn write<W>(&self, registry: &Registry, dest: &mut W) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
         write_header(dest)?;
         write_funcptrs(registry, dest)?;
-        write_hookfuncs(registry, dest)?;
+        write_hookfuncs(registry, dest,&self.blacklist)?;
         write_match(registry, dest)
     }
 }
@@ -101,44 +103,68 @@ where
     Ok(())
 }
 
-fn write_hookfuncs<W>(registry: &Registry, dest: &mut W) -> io::Result<()>
+fn write_hookfuncs<'a,W>(registry: &Registry, dest: &mut W, blacklist: &[&'a str]) -> io::Result<()>
 where
     W: io::Write,
 {
-    for cmd in &registry.cmds {
+
+    for cmd in &registry.cmds.iter().filter(|c| !blacklist.contains(&&c.proto.ident[0..])).collect::<Vec<&gl_generator::Cmd>>() {
+
+        let params = cmd
+            .params
+            .iter()
+            .map(|binding| { format!("{}: {}", binding.ident, binding.ty) })
+            .collect::<Vec<String>>()
+            .join(", ");
+        let name = &cmd.proto.ident;
+        let return_type = &cmd.proto.ty;
+        writeln!(
+            dest, 
+            r#"
+                #[allow(non_camel_case_types, non_snake_case, unused_variables,dead_code,unused_mut)]
+                pub unsafe extern "C" fn gl{name}({params}) -> {return_type}{{
+        "#)?;
+
+        let entry_params = cmd
+            .params
+            .iter()
+            .map(|binding| {
+                format!(
+                    " param \"{}\"; crate::trace::enums::TraceEntryParamValue::from({}); {}",
+                    binding.ident, binding.ident, binding.ty
+                )
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        writeln!(
+            dest,
+            r#"         
+                    let hook = crate::GLHooker::get_hook("gl{name}").unwrap();
+                    let trace = hook.get_userdata_mut::<crate::Trace>().unwrap();
+                    let mut trace_entry = crate::trace::TraceEntry::new("{name}");
+                    with_params!(&mut trace_entry;{entry_params});
+            "#
+        )?;
+
         writeln!(
             dest,
             r#"
-                    
-                    #[allow(non_camel_case_types, non_snake_case, unused_variables,dead_code,unused_mut)]
-                    pub unsafe extern "C" fn gl{name}({params}) -> {return_type}{{
-                        
-                        let hook = crate::GLHooker::get_hook("gl{name}").unwrap();
-                        let trace = hook.get_userdata_mut::<crate::Trace>().unwrap();
-                        let mut trace_entry = crate::trace::TraceEntry::new("{name}");
-                        with_params!(&mut trace_entry;{entry_params});
-                        
-                        if let Ok(addr) = hook.get_target_function() {{
-                            let gl_func = core::mem::transmute::<*mut core::ffi::c_void, extern "C" fn({type_signature}) -> {return_type}>(addr);
-                            let trace_entry = trace_entry.with_start_time();
-                            let result = gl_func({arg_values});
-                            let trace_entry = trace_entry.with_end_time();
-                            trace.entries.push(trace_entry);
-                            result
-                        }} else {{
-                            panic!();
-                        }}
-                        
+          
+                    if let Ok(addr) = hook.get_target_function() {{
+                        let gl_func = core::mem::transmute::<*mut core::ffi::c_void, extern "C" fn({type_signature}) -> {return_type}>(addr);
+                        let trace_entry = trace_entry.with_start_time();
+                        let result = gl_func({arg_values});
+                        let trace_entry = trace_entry.with_end_time();
+                        let trace_entry = Rc::new(trace_entry);
+                        trace.entries.push(Rc::clone(&trace_entry));
+                        result
+                    }} else {{
+                        panic!();
                     }}
+                        
+                }}
                 "#,
-            name = cmd.proto.ident,
-            return_type = cmd.proto.ty,
-            params = cmd
-                .params
-                .iter()
-                .map(|binding| { format!("{}: {}", binding.ident, binding.ty) })
-                .collect::<Vec<String>>()
-                .join(", "),
             arg_values = cmd
                 .params
                 .iter()
@@ -151,17 +177,7 @@ where
                 .map(|binding| { format!("{}", binding.ty) })
                 .collect::<Vec<String>>()
                 .join(", "),
-            entry_params = cmd
-                .params
-                .iter()
-                .map(|binding| {
-                    format!(
-                        " param \"{}\"; crate::trace::enums::TraceEntryParamValue::from({}); {}",
-                        binding.ident, binding.ident, binding.ty
-                    )
-                })
-                .collect::<Vec<String>>()
-                .join(", "),
+            
         )?
     }
     Ok(())

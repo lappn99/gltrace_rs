@@ -9,6 +9,8 @@ use self::enums::QueryTarget;
 
 use super::Result;
 
+
+#[derive(Debug, Clone)]
 pub struct QueryObject {
     name: Option<GLuint>,
 }

@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, vec};
 use std::fs::File;
 use std::path::Path;
 
@@ -43,7 +43,9 @@ fn main() {
         Fallbacks::None,
         [],
     )
-    .write_bindings(HookGenerator, &mut file)
+    .write_bindings(HookGenerator {
+        blacklist: vec!["ShaderSource","CreateShader"]
+    }, &mut file)
     .unwrap();
 }
 

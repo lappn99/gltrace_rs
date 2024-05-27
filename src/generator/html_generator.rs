@@ -4,8 +4,11 @@ use std::{env, time::Duration};
 use crate::gpu_query::QueryResult;
 
 use super::TraceOutputGenerator;
-use crate::types::types::GLuint64;
+use crate::{trace::resource::TransactionType, types::types::GLuint64};
 use chrono::{DateTime, Utc};
+
+use itertools::{self, Itertools};
+
 
 pub struct TraceHtmlGenerator;
 
@@ -15,6 +18,7 @@ impl TraceOutputGenerator for TraceHtmlGenerator {
         self.write_head(dest)?;
         self.write_header(dest, trace)?;
         self.write_body(dest, trace)?;
+        self.write_resources(dest, trace)?;
         writeln!(dest, "</html>")?;
         Ok(())
     }
@@ -59,19 +63,19 @@ impl TraceHtmlGenerator {
                     "<p>Total trace time(CPU): <b>{} ms</b></p>",
                     trace_end_time.duration_since(trace.start_time)?.as_millis()
                 )?;
-                #[cfg(feature = "gpu_queries")]
-                {
-                    if let Some(query_object) = &trace.query_object {
-                        let gpu_time: GLuint64 =
-                            query_object.query_result().unwrap_or(Default::default());
-                        let gpu_time: Duration = Duration::from_nanos(gpu_time);
-                        writeln!(
-                            dest,
-                            "<p>Total trace time(GPU): <b>{} µs</b></p>",
-                            gpu_time.as_micros()
-                        )?;
+                    #[cfg(feature = "gpu_queries")]
+                    {
+                        if let Some(query_object) = &trace.query_object {
+                            let gpu_time: GLuint64 =
+                                query_object.query_result().unwrap_or(Default::default());
+                            let gpu_time: Duration = Duration::from_nanos(gpu_time);
+                            writeln!(
+                                dest,
+                                "<p>Total trace time(GPU): <b>{} µs</b></p>",
+                                gpu_time.as_micros()
+                            )?;
+                        }
                     }
-                }
             }
         }
         writeln!(dest, "</header>")?;
@@ -136,5 +140,31 @@ impl TraceHtmlGenerator {
         writeln!(dest, "</body>")?;
 
         Ok(())
+    }
+
+
+    fn write_resources<W: std::io::Write>( &self,
+        dest: &mut W,
+        trace: &crate::Trace
+        ) -> super::Result<()> {
+        
+        for (key, chunk) in &trace.resource_transactions.iter().chunk_by(|el| el.resource) {
+            writeln!(dest,"Resource: {}", key)?;
+
+            for transaction in chunk {
+                match &transaction.transaction_type {
+                    TransactionType::UpdateShaderSource(src) => {
+                        writeln!(dest,"<code>{src}</code>")?;
+                    },
+                    TransactionType::CreateShader => {
+                        writeln!(dest,"Created shader {key}")?;
+                    }
+                }
+            }
+
+
+        }
+        Ok(())
+
     }
 }

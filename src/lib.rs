@@ -30,13 +30,14 @@ impl GLTracer {
 
             #[cfg(feature = "gpu_queries")]
             query_object: None,
+            resource_transactions: Box::new(Vec::new())
         };
 
         Ok(Self { trace: trace })
     }
 
     pub fn trace_func(&mut self, symbol: &str) -> Result<()> {
-        let hook = HookDesc::new(symbol, get_hook(symbol)?).with_userdata(&self.trace);
+        let hook: HookDesc<Trace> = HookDesc::new(symbol, get_hook(symbol)?).with_userdata(&self.trace);
         GLHooker::register_hook(hook)
     }
 

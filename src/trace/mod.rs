@@ -4,10 +4,14 @@ use crate::generator;
 use crate::gpu_query::enums::QueryTarget;
 
 pub mod enums;
+pub mod resource;
 #[cfg(feature = "gpu_queries")]
 use crate::gpu_query::QueryObject;
 use enums::TraceEntryParamValue;
-use std::time::{self};
+use std::{collections::btree_map::Entry, time};
+use std::rc::Rc;
+
+use self::resource::ResourceTransaction;
 
 #[derive(Debug, Clone)]
 pub struct TraceParam(pub String, pub TraceEntryParamValue);
@@ -18,13 +22,15 @@ pub struct TraceEntry {
     pub params: Option<Vec<TraceParam>>,
     pub time_start: Option<time::SystemTime>,
     pub time_end: Option<time::SystemTime>,
+
 }
 
 pub struct Trace {
-    pub entries: Box<Vec<TraceEntry>>,
+    pub entries: Box<Vec<Rc<TraceEntry>>>,
     pub start_time: time::SystemTime,
     #[cfg(feature = "gpu_queries")]
     pub query_object: Option<QueryObject>,
+    pub resource_transactions: Box<Vec<ResourceTransaction>>
 }
 
 impl Trace {
@@ -59,6 +65,13 @@ impl Trace {
         }
         Ok(())
     }
+
+    pub fn new_entry(&mut self,entry: TraceEntry) {
+        let rc = Rc::new(entry);
+        self.entries.push(rc);
+        
+    }
+
 }
 
 impl TraceEntry {
@@ -71,7 +84,7 @@ impl TraceEntry {
         }
     }
 
-    pub fn with_param<T>(&mut self, name: &str, value: TraceEntryParamValue) -> &Self {
+    pub fn with_param(&mut self, name: &str, value: TraceEntryParamValue) -> &Self {
         if let None = self.params {
             self.params = Some(Vec::new());
         }
