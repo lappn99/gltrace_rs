@@ -4,11 +4,8 @@ use std::{env, time::Duration};
 use crate::gpu_query::QueryResult;
 
 use super::TraceOutputGenerator;
-use crate::{trace::resource::{ResourceTransaction, TransactionType}, types::types::GLuint64};
+use crate::{trace::resource::ResourceTransaction, types::types::GLuint64};
 use chrono::{DateTime, Utc};
-
-use itertools::{self, Itertools};
-
 
 pub struct TraceHtmlGenerator;
 
@@ -63,19 +60,19 @@ impl TraceHtmlGenerator {
                     "<p>Total trace time(CPU): <b>{} ms</b></p>",
                     trace_end_time.duration_since(trace.start_time)?.as_millis()
                 )?;
-                    #[cfg(feature = "gpu_queries")]
-                    {
-                        if let Some(query_object) = &trace.query_object {
-                            let gpu_time: GLuint64 =
-                                query_object.query_result().unwrap_or(Default::default());
-                            let gpu_time: Duration = Duration::from_nanos(gpu_time);
-                            writeln!(
-                                dest,
-                                "<p>Total trace time(GPU): <b>{} µs</b></p>",
-                                gpu_time.as_micros()
-                            )?;
-                        }
+                #[cfg(feature = "gpu_queries")]
+                {
+                    if let Some(query_object) = &trace.query_object {
+                        let gpu_time: GLuint64 =
+                            query_object.query_result().unwrap_or(Default::default());
+                        let gpu_time: Duration = Duration::from_nanos(gpu_time);
+                        writeln!(
+                            dest,
+                            "<p>Total trace time(GPU): <b>{} µs</b></p>",
+                            gpu_time.as_micros()
+                        )?;
                     }
+                }
             }
         }
         writeln!(dest, "</header>")?;
@@ -142,14 +139,13 @@ impl TraceHtmlGenerator {
         Ok(())
     }
 
-
-    fn write_resources<W: std::io::Write>( &self,
+    fn write_resources<W: std::io::Write>(
+        &self,
         dest: &mut W,
-        trace: &crate::Trace    
-        ) -> super::Result<()> {
-        
-
-        let grouped_transactions = ResourceTransaction::group_transactions(&trace.resource_transactions);
+        trace: &crate::Trace,
+    ) -> super::Result<()> {
+        let grouped_transactions =
+            ResourceTransaction::group_transactions(&trace.resource_transactions);
 
         for (resource, transactions) in grouped_transactions {
             writeln!(dest, "Transactions for resource: {resource} <br>")?;
@@ -158,8 +154,6 @@ impl TraceHtmlGenerator {
             }
         }
 
-
         Ok(())
-
     }
 }

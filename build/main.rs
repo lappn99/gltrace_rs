@@ -1,6 +1,6 @@
-use std::{env, vec};
 use std::fs::File;
 use std::path::Path;
+use std::{env, vec};
 
 use gl_generator::{Api, Fallbacks, Profile, Registry};
 
@@ -43,9 +43,12 @@ fn main() {
         Fallbacks::None,
         [],
     )
-    .write_bindings(HookGenerator {
-        blacklist: vec!["ShaderSource","CreateShader"]
-    }, &mut file)
+    .write_bindings(
+        HookGenerator {
+            blacklist: vec!["ShaderSource", "CreateShader"],
+        },
+        &mut file,
+    )
     .unwrap();
 }
 

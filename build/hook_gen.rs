@@ -2,7 +2,7 @@ use gl_generator::{Generator, Registry};
 use std::io;
 
 pub struct HookGenerator<'a> {
-    pub blacklist: Vec<&'a str>
+    pub blacklist: Vec<&'a str>,
 }
 
 impl<'a> Generator for HookGenerator<'a> {
@@ -12,7 +12,7 @@ impl<'a> Generator for HookGenerator<'a> {
     {
         write_header(dest)?;
         write_funcptrs(registry, dest)?;
-        write_hookfuncs(registry, dest,&self.blacklist)?;
+        write_hookfuncs(registry, dest, &self.blacklist)?;
         write_match(registry, dest)
     }
 }
@@ -103,27 +103,35 @@ where
     Ok(())
 }
 
-fn write_hookfuncs<'a,W>(registry: &Registry, dest: &mut W, blacklist: &[&'a str]) -> io::Result<()>
+fn write_hookfuncs<'a, W>(
+    registry: &Registry,
+    dest: &mut W,
+    blacklist: &[&'a str],
+) -> io::Result<()>
 where
     W: io::Write,
 {
-
-    for cmd in &registry.cmds.iter().filter(|c| !blacklist.contains(&&c.proto.ident[0..])).collect::<Vec<&gl_generator::Cmd>>() {
-
+    for cmd in &registry
+        .cmds
+        .iter()
+        .filter(|c| !blacklist.contains(&&c.proto.ident[0..]))
+        .collect::<Vec<&gl_generator::Cmd>>()
+    {
         let params = cmd
             .params
             .iter()
-            .map(|binding| { format!("{}: {}", binding.ident, binding.ty) })
+            .map(|binding| format!("{}: {}", binding.ident, binding.ty))
             .collect::<Vec<String>>()
             .join(", ");
         let name = &cmd.proto.ident;
         let return_type = &cmd.proto.ty;
         writeln!(
-            dest, 
+            dest,
             r#"
                 #[allow(non_camel_case_types, non_snake_case, unused_variables,dead_code,unused_mut)]
                 pub unsafe extern "C" fn gl{name}({params}) -> {return_type}{{
-        "#)?;
+        "#
+        )?;
 
         let entry_params = cmd
             .params
@@ -177,7 +185,6 @@ where
                 .map(|binding| { format!("{}", binding.ty) })
                 .collect::<Vec<String>>()
                 .join(", "),
-            
         )?
     }
     Ok(())

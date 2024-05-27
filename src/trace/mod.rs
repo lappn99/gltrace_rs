@@ -8,8 +8,8 @@ pub mod resource;
 #[cfg(feature = "gpu_queries")]
 use crate::gpu_query::QueryObject;
 use enums::TraceEntryParamValue;
-use std::{collections::btree_map::Entry, time};
 use std::rc::Rc;
+use std::time;
 
 use self::resource::ResourceTransaction;
 
@@ -22,7 +22,6 @@ pub struct TraceEntry {
     pub params: Option<Vec<TraceParam>>,
     pub time_start: Option<time::SystemTime>,
     pub time_end: Option<time::SystemTime>,
-
 }
 
 pub struct Trace {
@@ -30,7 +29,7 @@ pub struct Trace {
     pub start_time: time::SystemTime,
     #[cfg(feature = "gpu_queries")]
     pub query_object: Option<QueryObject>,
-    pub resource_transactions: Box<Vec<ResourceTransaction>>
+    pub resource_transactions: Box<Vec<ResourceTransaction>>,
 }
 
 impl Trace {
@@ -66,12 +65,10 @@ impl Trace {
         Ok(())
     }
 
-    pub fn new_entry(&mut self,entry: TraceEntry) {
+    pub fn new_entry(&mut self, entry: TraceEntry) {
         let rc = Rc::new(entry);
         self.entries.push(rc);
-        
     }
-
 }
 
 impl TraceEntry {

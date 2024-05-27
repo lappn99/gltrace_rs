@@ -4,11 +4,9 @@ use crate::types::types::{GLboolean, GLenum, GLint, GLint64, GLuint, GLuint64};
 pub mod enums;
 pub mod errors;
 
-
 use self::enums::QueryTarget;
 
 use super::Result;
-
 
 #[derive(Debug, Clone)]
 pub struct QueryObject {
@@ -17,7 +15,6 @@ pub struct QueryObject {
 
 pub trait QueryResult<T> {
     fn query_result(&self) -> super::Result<T>;
-
 }
 
 impl QueryObject {
@@ -29,7 +26,7 @@ impl QueryObject {
         }
 
         Self {
-            name: if name > 0 { Some(name) } else { None }
+            name: if name > 0 { Some(name) } else { None },
         }
     }
 

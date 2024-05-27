@@ -17,7 +17,6 @@ gpu_queries = []
 glhooker = {path = "./glhooker", version = "*"}
 gl_loader = "*"
 chrono = "*"
-itertools = "0.13.0"
 
 [dev-dependencies]
 gl = "*"
